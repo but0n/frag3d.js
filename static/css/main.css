@@ -1,0 +1,43 @@
+@font-face {
+    font-family: "custom-play";
+    src: url('play.woff2') format('woff');
+}
+@font-face {
+    font-family: "custom-dig";
+    src: url('digital_(mono).ttf') format('truetype');
+}
+body {
+	padding: 0;
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+    position: relative;
+    margin: 0;
+	background-color: #ededed;
+	display: flex;
+	justify-content: center;
+}
+
+.gray {
+	filter: grayscale(100%);
+}
+
+
+:root{
+	/* theme */
+	--theme-panel-color: rgb(83, 92, 99);
+	--theme-desktop-color: #459dc3;
+	--theme-node-color: #3e4c57;
+	--io-bar-highlight-color: rgba(255, 128, 0, 1);
+	--io-bar-color: rgba(255, 255, 255, .4);
+	/* --io-bar-selected: rgb(255, 123, 0); */
+	--menu-bar-width: 160px;
+	--menu-bar-height: 24px;
+}
+
+
+#renderer {
+	background-color: rgb(102, 102, 102);
+	position: absolute;
+	width: 3px;
+	height: 2px;
+	cursor: crosshair;
+}
