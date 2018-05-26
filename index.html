@@ -6,7 +6,25 @@
         <title>Shader Nodes</title>
     </head>
     <body>
-        <canvas id="renderer" width="720" height="480" onmousedown="drag(event)" onmouseup="stopDrag(event)" onmousemove="mousemove(event)"></canvas>
+        <canvas id="renderer" width="720" height="480"></canvas>
+        <script id="gpgpu-vs" type="x-shader/x-vertex">
+            attribute vec3  a_Position;
+            attribute vec2  a_texCoord;
+            varying vec2    uv;
+            void main () {
+                uv = a_texCoord;
+                gl_Position = vec4(a_Position, 1);
+            }
+        </script>
+        <script id="gpgpu-fs" type="x-shader/x-fragment">
+            #extension GL_OES_standard_derivatives : enable
+            precision mediump float;
+            uniform sampler2D   data;
+            varying vec2        uv;
+            void main () {
+                gl_FragColor = vec4(1);
+            }
+        </script>
         <script id="Shader-vs" type="x-shader/x-vertex">
             // Mesh
             attribute vec3 a_Position;
