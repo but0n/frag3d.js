@@ -22,7 +22,7 @@
             uniform sampler2D   data;
             varying vec2        uv;
             void main () {
-                gl_FragColor = vec4(1);
+                gl_FragColor = texture2D(data, uv);
             }
         </script>
         <script id="Shader-vs" type="x-shader/x-vertex">

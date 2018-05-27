@@ -132,7 +132,32 @@ function ss_render(gl) { // Screen space render
         0, 1, 2,
         0, 2, 3
     ]), gl.STATIC_DRAW);
+
+    t = texture(gl, 0, 0, gl.LUMINANCE, 3, 2, 0, gl.UNSIGNED_BYTE, new Uint8Array([123, 41, 123, 0, 123, 0]));
+    gl.uniform1i(shader.data, 0);
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
 
 ss_render(gl);
+
+function texture(gl, channel, level, format, width, height, border, type, data) {
+    gl.activeTexture([
+        gl.TEXTURE0,
+        gl.TEXTURE1,
+        gl.TEXTURE2,
+        gl.TEXTURE3,
+        gl.TEXTURE4,
+        gl.TEXTURE5,
+        gl.TEXTURE6,
+        gl.TEXTURE7
+    ][channel]);
+    tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.texImage2D(gl.TEXTURE_2D, level, format, width, height, border, format, type, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return tex;
+}
