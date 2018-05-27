@@ -141,7 +141,7 @@ function ss_render(gl) { // Screen space render
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
 
-function renderMesh(gl, vert, normal, map) {
+function renderMesh(gl, vert, normal, map, t) {
     gl.clearColor(0.4,0.4,0.4, 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
@@ -164,11 +164,13 @@ function renderMesh(gl, vert, normal, map) {
     shader.u_V = gl.getUniformLocation(shader, "u_V");
     shader.u_P = gl.getUniformLocation(shader, "u_P");
     shader.u_normalMatrix = gl.getUniformLocation(shader, "u_normalMatrix");
+    shader.u_time = gl.getUniformLocation(shader, "u_time");
 
 
     // MVP
     let deepth = 5;
     let model = new Matrix4();
+    // model.setRotate(t, 1, 0, 0);
     let view = new Matrix4();
     let proje = new Matrix4();
     view.setLookAt(0, 0, deepth, 0, 0, 0, 0, 1, 0);
@@ -183,6 +185,7 @@ function renderMesh(gl, vert, normal, map) {
     gl.uniformMatrix4fv(shader.u_V, false, view.elements);
     gl.uniformMatrix4fv(shader.u_P, false, proje.elements);
     gl.uniformMatrix4fv(shader.u_normalMatrix, false, nm.elements);
+    gl.uniform1f(shader.u_time, t);
 
     attributeBuffer(shader.a_Position, vert, 3, gl.FLOAT);
     attributeBuffer(shader.a_Normal, normal, 3, gl.FLOAT);
@@ -216,7 +219,8 @@ function texture(gl, channel, level, format, width, height, border, type, data) 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 }
 
-let mesh = GenerateSphere(1.0, 40);
+let mesh = GenerateSphere(1.0, 60);
 ss_render(gl);
-renderMesh(gl, mesh.vertices, mesh.normals, mesh.map);
-setInterval(()=>{renderMesh(gl, mesh.vertices, mesh.normals, mesh.map);}, 100);
+renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, 0);
+let t = 0
+setInterval(()=>{renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, t++);}, 100);

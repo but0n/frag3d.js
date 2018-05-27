@@ -36,13 +36,38 @@
             uniform mat4 u_V;
             uniform mat4 u_P;
             uniform mat4 u_normalMatrix;
+            uniform float u_time;
 
             // Interpolated
             varying vec3 v_normal;      // 每个片元的法线
             varying vec3 v_pos;         // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
+            vec3 rotateVec3(vec3 p, float angle, vec3 axis){
+                vec3 a = normalize(axis);
+                float s = sin(angle);
+                float c = cos(angle);
+                float r = 1.0 - c;
+                mat3 m = mat3(
+                    a.x * a.x * r + c,
+                    a.y * a.x * r + a.z * s,
+                    a.z * a.x * r - a.y * s,
+                    a.x * a.y * r - a.z * s,
+                    a.y * a.y * r + c,
+                    a.z * a.y * r + a.x * s,
+                    a.x * a.z * r + a.y * s,
+                    a.y * a.z * r - a.x * s,
+                    a.z * a.z * r + c
+                );
+                return m * p;
+            }
+            float rand(vec2 co){
+                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+            }
             void main () {
-                gl_Position = u_P * u_V * u_M * vec4(a_Position, 1);
+                vec3 p = rotateVec3(a_Position, radians(2.0* u_time), normalize(vec3(0, 7, 0) * a_Position.xyz));
+                p = rotateVec3(p, radians(0.5 * u_time), normalize(vec3(0, 0, 2) * a_Position.xyz));
+                p = rotateVec3(p, radians(10.0 * u_time), normalize(vec3(9, 9, 2) * a_Position.xyz));
+                gl_Position = u_P * u_V * u_M * vec4(p, 1);
                 v_pos = vec3(u_M * vec4(a_Position, 1));   // 每个片元的世界坐标
                 v_normal = vec3(u_normalMatrix * vec4(a_Normal, 1));  // 每个片元的法线
                 v_texCoord = a_texCoord;
@@ -70,7 +95,7 @@
                 vec3 diffuseContrib = vec3(1.0) * max(dot(n, l), 0.0);
 
                 // Final Result
-                gl_FragColor = vec4(diffuseContrib, 1);
+                gl_FragColor = vec4(n, 1);
             }
         </script>
 
