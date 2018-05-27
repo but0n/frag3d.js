@@ -132,13 +132,68 @@ function ss_render(gl) { // Screen space render
         0, 1, 2,
         0, 2, 3
     ]), gl.STATIC_DRAW);
-
-    t = texture(gl, 0, 0, gl.LUMINANCE, 3, 2, 0, gl.UNSIGNED_BYTE, new Uint8Array([123, 41, 123, 0, 123, 0]));
+    let sampler = [];
+    for(let i = 0; i < 65536; i++) {
+        sampler.push(255*Math.random(), 255*Math.random(), 255*Math.random());
+    }
+    texture(gl, 0, 0, gl.RGB, 256, 256, 0, gl.UNSIGNED_BYTE, new Uint8Array(sampler));
     gl.uniform1i(shader.data, 0);
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
 
-ss_render(gl);
+function renderMesh(gl, vert, normal, map) {
+    gl.clearColor(0.4,0.4,0.4, 1.0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ADD);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
+
+
+    let shader = gl.createProgram();
+    gl.attachShader(shader, getShader('Shader-vs', gl));
+    gl.attachShader(shader, getShader('Shader-fs', gl));
+    gl.linkProgram(shader);
+    gl.useProgram(shader);
+    // Attributes
+    shader.a_Position   = gl.getAttribLocation(shader, 'a_Position');
+    shader.a_Color      = gl.getAttribLocation(shader, 'a_Color');
+    shader.a_Normal     = gl.getAttribLocation(shader, 'a_Normal');
+    shader.a_texCoord   = gl.getAttribLocation(shader, 'a_texCoord');
+    // Uniform
+    shader.u_M = gl.getUniformLocation(shader, "u_M");
+    shader.u_V = gl.getUniformLocation(shader, "u_V");
+    shader.u_P = gl.getUniformLocation(shader, "u_P");
+    shader.u_normalMatrix = gl.getUniformLocation(shader, "u_normalMatrix");
+
+
+    // MVP
+    let deepth = 5;
+    let model = new Matrix4();
+    let view = new Matrix4();
+    let proje = new Matrix4();
+    view.setLookAt(0, 0, deepth, 0, 0, 0, 0, 1, 0);
+    proje.setPerspective(30, $('#renderer').width()/$('#renderer').height(), 1, 100);
+
+    let nm = new Matrix4();
+    shader.u_normalMatrix = gl.getUniformLocation(shader, "u_normalMatrix");
+    nm.setInverseOf(model);
+    nm.transpose();
+
+    gl.uniformMatrix4fv(shader.u_M, false, model.elements);
+    gl.uniformMatrix4fv(shader.u_V, false, view.elements);
+    gl.uniformMatrix4fv(shader.u_P, false, proje.elements);
+    gl.uniformMatrix4fv(shader.u_normalMatrix, false, nm.elements);
+
+    attributeBuffer(shader.a_Position, vert, 3, gl.FLOAT);
+    attributeBuffer(shader.a_Normal, normal, 3, gl.FLOAT);
+
+    let buf = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, map, gl.STATIC_DRAW);
+
+    gl.drawElements(gl.TRIANGLES, map.length, gl.UNSIGNED_SHORT, 0);
+}
+
 
 function texture(gl, channel, level, format, width, height, border, type, data) {
     gl.activeTexture([
@@ -159,5 +214,9 @@ function texture(gl, channel, level, format, width, height, border, type, data) 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    return tex;
 }
+
+let mesh = GenerateSphere(1.0, 40);
+ss_render(gl);
+renderMesh(gl, mesh.vertices, mesh.normals, mesh.map);
+setInterval(()=>{renderMesh(gl, mesh.vertices, mesh.normals, mesh.map);}, 100);

@@ -32,27 +32,20 @@
             attribute vec3 a_Normal;
             attribute vec2 a_texCoord;
             // MVP
-            uniform mat4 u_ModelMatrix;
-            uniform mat4 u_ViewMatrix;
-            uniform mat4 u_ProjeMatrix;
+            uniform mat4 u_M;
+            uniform mat4 u_V;
+            uniform mat4 u_P;
             uniform mat4 u_normalMatrix;
-            uniform mat4 u_CubeMatrix;
 
             // Interpolated
             varying vec3 v_normal;      // 每个片元的法线
             varying vec3 v_pos;         // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
-            varying vec3 co;
-            varying mat4 v_model;
-            varying mat4 c_model;
             void main () {
-                gl_Position = u_ProjeMatrix * u_ViewMatrix * u_ModelMatrix * vec4(a_Position, 1.0);
-                v_model = u_ModelMatrix;
-                c_model = u_CubeMatrix;
-                v_pos = vec3(u_ModelMatrix * vec4(a_Position, 1.0));   // 每个片元的世界坐标
-                v_normal = vec3(u_normalMatrix * vec4(a_Normal, 0.0));  // 每个片元的法线
+                gl_Position = u_P * u_V * u_M * vec4(a_Position, 1);
+                v_pos = vec3(u_M * vec4(a_Position, 1));   // 每个片元的世界坐标
+                v_normal = vec3(u_normalMatrix * vec4(a_Normal, 1));  // 每个片元的法线
                 v_texCoord = a_texCoord;
-                co = a_Color;
                 gl_PointSize  = 1.0;
             }
         </script>
@@ -61,43 +54,30 @@
 
             #define PI              3.1415926535898
             precision mediump float;
-            uniform vec3 u_lightDirection;   // Current frame const 光源位置
             uniform sampler2D u_tex0;
-            uniform sampler2D u_tex1;
-            uniform sampler2D u_tex2;
-            uniform sampler2D u_tex3;
-            uniform sampler2D u_tex4;
-            uniform sampler2D u_tex5;
-            uniform sampler2D u_tex6;
-            uniform samplerCube u_tex7;
 
-            varying mat4 v_model;
             varying vec3 v_normal;          // 每个片元的法线
             varying vec3 v_pos;             // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
-            varying mat4 c_model;
-            varying vec3 co;
 
             void main () {
 
                 vec3 n = normalize(v_normal);
 
-                // vec3 l = normalize(u_lightDirection);
-                vec3 l = normalize((v_model * vec4(u_lightDirection, 0.0)).xyz);
+                vec3 l = normalize(vec3(0, 10, 10));
 
                 // Diffuse
-                vec3 diffuseContrib = vec3(0.9) * max(dot(n, l), 0.0); // Lambert
-
+                vec3 diffuseContrib = vec3(1.0) * max(dot(n, l), 0.0);
 
                 // Final Result
-                gl_FragColor = vec4(diffuseContrib, 1.0);
-                gl_FragColor = vec4(co, 1);
+                gl_FragColor = vec4(diffuseContrib, 1);
             }
         </script>
 
         <script src="static/scripts/jquery-2.1.4.min.js"></script>
         <script src="static/scripts/jquery.ui.touch-punch.min.js"></script>
         <script src="static/scripts/cuon-matrix.js"></script>
+        <script src="static/scripts/mesh.js"></script>
         <script src="static/scripts/render.js"></script>
 
     </body>
