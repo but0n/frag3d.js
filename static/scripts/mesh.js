@@ -1,3 +1,10 @@
+function meshMixin(frag3d) {
+    // const meshData =
+    frag3d.prototype.GenSphere = function() {
+
+    }
+}
+
 function GenerateSphere(radius, sagment) {
     this.r = (c) => Math.PI*c/180.0
     this.cos = (c) => Math.cos(this.r(c));

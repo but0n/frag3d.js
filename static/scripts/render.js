@@ -1,10 +1,57 @@
+function webglMixin(frag3d) {
+    frag3d.pixelRatio = window.devicePixelRatio;
+    frag3d.prototype.id = null;
+    frag3d.prototype._size = {};
+    frag3d.prototype.size = {};
+    frag3d.prototype.renderer = null;
+    frag3d.prototype._renderer = null;
+    frag3d.prototype.gl = null; // WebGL Context
+    frag3d.prototype.setRenderSize = () => {}
+    // Renderer size set & get
+    const resize = {};
+    resize.get = function() {
+        return {
+            width: this._size.width,
+            height: this._size.height,
+        }
+    }
+    resize.set = function({innerWidth, innerHeight}) {
+        this._size = {
+            width: innerWidth,
+            height: innerHeight,
+        }
+        this.setRenderSize();
+
+    }
+    Object.defineProperty(frag3d.prototype, 'size', resize);
+
+    frag3d.prototype.initalWebgl = function(id) {
+        this.id = id;
+        this.renderer = document.getElementById(id);
+        this.gl = this.renderer.getContext('webgl');
+        this._renderer = $('#' + id);
+        this.setRenderSize = () => {
+            this._renderer.attr('width', this._size.width * frag3d.pixelRatio);
+            this._renderer.attr('height', this._size.height * frag3d.pixelRatio);
+            this._renderer.width(this._size.width);
+            this._renderer.height(this._size.height);
+        }
+        this.size = window;
+        $(window).resize(() => {
+            this.size = window;
+        });
+    }
+}
+
+
+
 $('#renderer').attr('width', window.innerWidth*2);
 $('#renderer').attr('height', window.innerHeight*2);
 $('#renderer').width(window.innerWidth);
 $('#renderer').height(window.innerHeight);
 
 let gl = document.getElementById('renderer').getContext('webgl');
-
+// gl.viewport(0, 0, 128, 128);
 gl.getExtension("OES_standard_derivatives"); // TBN required
 
 function getShader(e, GL_ctx) {
@@ -221,6 +268,9 @@ function texture(gl, channel, level, format, width, height, border, type, data) 
 
 let mesh = GenerateSphere(1.0, 60);
 ss_render(gl);
-renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, 0);
-let t = 0
-setInterval(()=>{renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, t++);}, 100);
+// renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, 0);
+let t = 0;
+// setInterval(()=>{renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, t++);}, 100);
+setInterval(()=>{
+    ss_render(gl);
+}, 1000);

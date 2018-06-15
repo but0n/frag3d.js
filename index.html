@@ -23,6 +23,8 @@
             varying vec2        uv;
             void main () {
                 gl_FragColor = texture2D(data, uv);
+                //vec2 xy = gl_FragCoord.xy / vec2(2354, 1608);
+                //gl_FragColor = vec4(xy, 0, 1);
             }
         </script>
         <script id="Shader-vs" type="x-shader/x-vertex">
@@ -104,6 +106,7 @@
         <script src="static/scripts/cuon-matrix.js"></script>
         <script src="static/scripts/mesh.js"></script>
         <script src="static/scripts/render.js"></script>
+        <script src="static/scripts/frag3d.js"></script>
 
     </body>
 </html>
