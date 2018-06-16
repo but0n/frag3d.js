@@ -115,8 +115,10 @@ function webglMixin(frag3d) {
             ob.get = () => null;
             let setter = this.getUnifSetter(type);
             ob.set = data => {
-                console.log('Setting');
-                this.gl[setter](location, data);
+                if(data.length)
+                    this.gl[setter](location, ...data);
+                else
+                    this.gl[setter](location, data);
             }
             Object.defineProperty(obj, unif, ob);
         }
