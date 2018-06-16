@@ -1,8 +1,10 @@
 function frag3d(id) {
-    this.initalWebgl(id);
+    this.initWebgl(id);
 }
 
 webglMixin(frag3d);
 meshMixin(frag3d);
 
-let vue = new frag3d('renderer');
+
+let frag = new frag3d('renderer');
+frag.ss_render();

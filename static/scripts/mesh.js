@@ -23,34 +23,32 @@ function GenerateSphere(radius, sagment) {
             a = [radius * this.sin(t) * this.cos(w), radius * this.cos(t), radius * this.sin(t) * this.sin(w)];
             b = [radius * this.sin(t+del) * this.cos(w), radius * this.cos(t+del), radius * this.sin(t+del) * this.sin(w)];
             c = [radius * this.sin(t+del) * this.cos(w+del), radius * this.cos(t+del), radius * this.sin(t+del) * this.sin(w+del)];
-            vet.push(a[0], a[1], a[2]);
-            vet.push(b[0], b[1], b[2]);
-            vet.push(c[0], c[1], c[2]);
+            vet.push(...a, ...b, ...c);
             col.push(Math.random(),Math.random(),Math.random());
             col.push(Math.random(),Math.random(),Math.random());
             col.push(Math.random(),Math.random(),Math.random());
             let n = substractVectors(a, [0, 0, 0]);
-            nor.push(n[0], n[1], n[2]);
+            nor.push(...n);
             n = substractVectors(b, [0, 0, 0]);
-            nor.push(n[0], n[1], n[2]);
+            nor.push(...n);
             n = substractVectors(c, [0, 0, 0]);
-            nor.push(n[0], n[1], n[2]);
+            nor.push(...n);
             //  UV
             tex.push(-w/360, t/180);             // a
             tex.push(-w/360, (t+del)/180);       // b
             tex.push(-(w+del)/360, (t+del)/180); // c
             if((t!=0) && t!=(180)) { // top or bottom spot
                 d = [radius * this.sin(t) * this.cos(w + del), radius * this.cos(t), radius * this.sin(t) * this.sin(w + del)];
-                vet.push(a[0], a[1], a[2]);
-                vet.push(c[0], c[1], c[2]);
-                vet.push(d[0], d[1], d[2]);
+                vet.push(...a);
+                vet.push(...c);
+                vet.push(...d);
 
                 let n = substractVectors(a, [0, 0, 0]);
-                nor.push(n[0], n[1], n[2]);
+                nor.push(...n);
                 n = substractVectors(c, [0, 0, 0]);
-                nor.push(n[0], n[1], n[2]);
+                nor.push(...n);
                 n = substractVectors(d, [0, 0, 0]);
-                nor.push(n[0], n[1], n[2]);
+                nor.push(...n);
 
                 //  UV
                 tex.push(-w/360, t/180);             // a

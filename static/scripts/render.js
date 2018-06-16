@@ -1,89 +1,197 @@
 function webglMixin(frag3d) {
     frag3d.pixelRatio = window.devicePixelRatio;
     frag3d.prototype.id = null;
-    frag3d.prototype._size = {};
-    frag3d.prototype.size = {};
     frag3d.prototype.renderer = null;
-    frag3d.prototype._renderer = null;
     frag3d.prototype.gl = null; // WebGL Context
-    frag3d.prototype.setRenderSize = () => {}
     // Renderer size set & get
-    const resize = {};
-    resize.get = function() {
-        return {
-            width: this._size.width,
-            height: this._size.height,
-        }
-    }
-    resize.set = function({innerWidth, innerHeight}) {
-        this._size = {
-            width: innerWidth,
-            height: innerHeight,
-        }
-        this.setRenderSize();
 
-    }
-    Object.defineProperty(frag3d.prototype, 'size', resize);
-
-    frag3d.prototype.initalWebgl = function(id) {
+    // Initial method
+    frag3d.prototype.initWebgl = function(id) {
         this.id = id;
         this.renderer = document.getElementById(id);
         this.gl = this.renderer.getContext('webgl');
-        this._renderer = $('#' + id);
-        this.setRenderSize = () => {
-            this._renderer.attr('width', this._size.width * frag3d.pixelRatio);
-            this._renderer.attr('height', this._size.height * frag3d.pixelRatio);
-            this._renderer.width(this._size.width);
-            this._renderer.height(this._size.height);
+        this.gl.getExtension("OES_standard_derivatives"); // TBN required
+    }
+
+
+// WebGL stuff
+
+    // Compile shader
+    frag3d.prototype.getShader = function(code, type) {
+        let gl = this.gl;
+        let shader;
+        shader = gl.createShader(type);
+        gl.shaderSource(shader, code);
+        gl.compileShader(shader);
+        if(gl.getShaderParameter(shader, gl.COMPILE_STATUS) === true)
+            return shader;
+        else
+            return console.warn(gl.getShaderInfoLog(shader));
+    }
+
+    frag3d.prototype.getShaderByID = function(id) {
+        let gl = this.gl;
+        let dom = document.getElementById(id);
+        if(dom.type === 'x-shader/x-vertex') {
+            shader = this.getShader(dom.text, gl.VERTEX_SHADER);
+        } else if(dom.type === 'x-shader/x-fragment') {
+            shader = this.getShader(dom.text, gl.FRAGMENT_SHADER);
         }
-        this.size = window;
-        $(window).resize(() => {
-            this.size = window;
-        });
-    }
-}
-
-
-
-$('#renderer').attr('width', window.innerWidth*2);
-$('#renderer').attr('height', window.innerHeight*2);
-$('#renderer').width(window.innerWidth);
-$('#renderer').height(window.innerHeight);
-
-let gl = document.getElementById('renderer').getContext('webgl');
-// gl.viewport(0, 0, 128, 128);
-gl.getExtension("OES_standard_derivatives"); // TBN required
-
-function getShader(e, GL_ctx) {
-    let dom = document.getElementById(e);
-    let shader;
-    if(dom.type === 'x-shader/x-vertex') {
-        shader = GL_ctx.createShader(gl.VERTEX_SHADER);
-    } else if(dom.type === 'x-shader/x-fragment') {
-        shader = GL_ctx.createShader(gl.FRAGMENT_SHADER);
-    }
-    GL_ctx.shaderSource(shader, dom.text);
-    GL_ctx.compileShader(shader);
-    if(GL_ctx.getShaderParameter(shader, gl.COMPILE_STATUS) === true)
         return shader;
-    else
-        (console.log(GL_ctx.getShaderInfoLog(shader)));
-}
+    }
 
-function attributeBuffer(pointer, data, n, type) {
-    var buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.vertexAttribPointer(pointer, n, type, false, 0, 0);
-    gl.enableVertexAttribArray(pointer);
-}
+    frag3d.prototype.useShader = function(s1, s2, Attributes, Uniforms) {
+        let gl = this.gl;
+        let shader = gl.createProgram();
+        gl.attachShader(shader, s1);
+        gl.attachShader(shader, s2);
+        gl.linkProgram(shader);
+        gl.useProgram(shader);
+        this.setupShader(shader, Attributes, Uniforms);
+        return shader;
+    }
 
+    frag3d.prototype.useShaderByID = function(id1, id2, Attributes, Uniforms) {
+        return this.useShader(
+            this.getShaderByID(id1),
+            this.getShaderByID(id2),
+            Attributes,
+            Uniforms,
+        );
+    }
 
-function bindTexture(file, channel) {
-    let target  = new Image();
-    let tex     = gl.createTexture();
-    target.src  = 'static/texture/' + file;
-    target.onload = () => {
+    frag3d.prototype.setupShader = function(shader, Attributes, Uniforms) {
+        for(attr of Attributes) {
+            shader[attr] = this.gl.getAttribLocation(shader, attr);
+        }
+        for(unif of Uniforms) {
+            shader[unif] = this.gl.getUniformLocation(shader, unif);
+        }
+    }
+
+    frag3d.prototype.bindAttribute = function(attr, data, chunkSize, type) {
+        let buf = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
+        this.gl.vertexAttribPointer(attr, chunkSize, type, false, 0, 0);
+        this.gl.enableVertexAttribArray(attr);
+    }
+
+    frag3d.prototype.bindBuffer = function(data, type) {
+        let buf = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, buf);
+        this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, data, type);
+    }
+
+    frag3d.prototype.bindTexture = function(src, channel) {
+        let gl = this.gl;
+        let target  = new Image();
+        let tex     = gl.createTexture();
+        target.src  = src;
+        target.onload = () => {
+            gl.activeTexture([
+                gl.TEXTURE0,
+                gl.TEXTURE1,
+                gl.TEXTURE2,
+                gl.TEXTURE3,
+                gl.TEXTURE4,
+                gl.TEXTURE5,
+                gl.TEXTURE6,
+                gl.TEXTURE7
+            ][channel]);
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            // Configure
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, target);
+        }
+    }
+
+    frag3d.prototype.bindCubeTexture = function(path, channel) {
+        let gl = this.gl;
+        let cubetex = gl.createTexture();
+        let counter = 0;
+        for(let _=0;_<6;_++) {
+            let p = new Image();
+            p.src = path + ['negx.jpg','negy.jpg','negz.jpg','posx.jpg','posy.jpg','posz.jpg'][_];
+            let glFlag = [
+                gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+                gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+                gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+                gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+                gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+                gl.TEXTURE_CUBE_MAP_POSITIVE_Z
+            ];
+            p.onload = () => {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubetex);
+                gl.texImage2D(glFlag[_], 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, p);
+
+                counter++;
+                if(counter==6) { // All set
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.activeTexture([
+                        gl.TEXTURE0,
+                        gl.TEXTURE1,
+                        gl.TEXTURE2,
+                        gl.TEXTURE3,
+                        gl.TEXTURE4,
+                        gl.TEXTURE5,
+                        gl.TEXTURE6,
+                        gl.TEXTURE7
+                    ][channel]);
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubetex);
+
+                }
+            }
+        }
+    }
+
+    frag3d.prototype.ss_render = function() { // Screen space render
+        let gl = this.gl;
+        gl.clearColor(0,0,0,1);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ADD);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
+
+        let shader = this.useShaderByID(
+            'gpgpu-vs',
+            'gpgpu-fs',
+            ['a_Position', 'a_texCoord'],
+            ['data'],
+        );
+
+        this.bindAttribute(shader.a_Position, new Float32Array([  // Vertex Postion
+            -1, 1, 0.0,
+            1, 1, 0.0,
+            1, -1, 0.0,
+            -1, -1, 0.0
+        ]), 3, gl.FLOAT);
+        this.bindAttribute(shader.a_texCoord, new Float32Array([  // TexCoord
+            0.0, 1.0,
+            1.0, 1.0,
+            1.0, 0.0,
+            0.0, 0.0
+        ]), 2, gl.FLOAT);
+
+        this.bindBuffer(new Uint16Array([
+            0, 1, 2,
+            0, 2, 3
+        ]), gl.STATIC_DRAW);
+
+        let sampler = [];
+        for(let i = 0; i < 65536; i++) {
+            sampler.push(255*Math.random(), 255*Math.random(), 255*Math.random());
+        }
+        this.genTexture(0, 0, gl.RGB, 256, 256, 0, gl.UNSIGNED_BYTE, new Uint8Array(sampler));
+        gl.uniform1i(shader.data, 0);
+        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    }
+
+    frag3d.prototype.genTexture = function texture(channel, level, format, width, height, border, type, data) {
+        let gl = this.gl;
         gl.activeTexture([
             gl.TEXTURE0,
             gl.TEXTURE1,
@@ -94,183 +202,103 @@ function bindTexture(file, channel) {
             gl.TEXTURE6,
             gl.TEXTURE7
         ][channel]);
+        tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        // Configure
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, target);
-        // Sending data
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        gl.texImage2D(gl.TEXTURE_2D, level, format, width, height, border, format, type, data);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     }
 }
 
-function loadCubeTexture(path, channel) {
-    let cubetex = gl.createTexture();
-    let counter = 0;
-    for(let _=0;_<6;_++) {
-        let p = new Image();
-        p.src = path + ['negx.jpg','negy.jpg','negz.jpg','posx.jpg','posy.jpg','posz.jpg'][_];
-        let glFlag = [
-            gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
-            gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
-            gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
-            gl.TEXTURE_CUBE_MAP_POSITIVE_X,
-            gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
-            gl.TEXTURE_CUBE_MAP_POSITIVE_Z
-        ];
-        p.onload = () => {
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubetex);
-            gl.texImage2D(glFlag[_], 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, p);
-
-            counter++;
-
-            if(counter==6) { // All set
-                console.log('ATTACH CUBE!');
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.activeTexture([
-                    gl.TEXTURE0,
-                    gl.TEXTURE1,
-                    gl.TEXTURE2,
-                    gl.TEXTURE3,
-                    gl.TEXTURE4,
-                    gl.TEXTURE5,
-                    gl.TEXTURE6,
-                    gl.TEXTURE7
-                ][channel]);
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubetex);
-
-            }
-        }
-    }
-}
-
-function ss_render(gl) { // Screen space render
-    gl.clearColor(0.4,0.4,0.4, 1.0);
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ADD);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
-
-    let shader = gl.createProgram();
-    gl.attachShader(shader, getShader('gpgpu-vs', gl));
-    gl.attachShader(shader, getShader('gpgpu-fs', gl));
-    gl.linkProgram(shader);
-    gl.useProgram(shader);
-    shader.data = gl.getUniformLocation(shader, "data");
-    shader.a_Position = gl.getAttribLocation(shader, 'a_Position');
-    shader.a_texCoord = gl.getAttribLocation(shader, 'a_texCoord');
-
-    attributeBuffer(shader.a_Position, new Float32Array([  // Vertex Postion
-        -1, 1, 0.0,
-        1, 1, 0.0,
-        1, -1, 0.0,
-        -1, -1, 0.0
-    ]), 3, gl.FLOAT);
-    attributeBuffer(shader.a_texCoord, new Float32Array([  // TexCoord
-        0.0, 1.0,
-        1.0, 1.0,
-        1.0, 0.0,
-        0.0, 0.0
-    ]), 2, gl.FLOAT);
-    let buf = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([
-        0, 1, 2,
-        0, 2, 3
-    ]), gl.STATIC_DRAW);
-    let sampler = [];
-    for(let i = 0; i < 65536; i++) {
-        sampler.push(255*Math.random(), 255*Math.random(), 255*Math.random());
-    }
-    texture(gl, 0, 0, gl.RGB, 256, 256, 0, gl.UNSIGNED_BYTE, new Uint8Array(sampler));
-    gl.uniform1i(shader.data, 0);
-    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-}
-
-function renderMesh(gl, vert, normal, map, t) {
-    gl.clearColor(0.4,0.4,0.4, 1.0);
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ADD);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
 
 
-    let shader = gl.createProgram();
-    gl.attachShader(shader, getShader('Shader-vs', gl));
-    gl.attachShader(shader, getShader('Shader-fs', gl));
-    gl.linkProgram(shader);
-    gl.useProgram(shader);
-    // Attributes
-    shader.a_Position   = gl.getAttribLocation(shader, 'a_Position');
-    shader.a_Color      = gl.getAttribLocation(shader, 'a_Color');
-    shader.a_Normal     = gl.getAttribLocation(shader, 'a_Normal');
-    shader.a_texCoord   = gl.getAttribLocation(shader, 'a_texCoord');
-    // Uniform
-    shader.u_M = gl.getUniformLocation(shader, "u_M");
-    shader.u_V = gl.getUniformLocation(shader, "u_V");
-    shader.u_P = gl.getUniformLocation(shader, "u_P");
-    shader.u_normalMatrix = gl.getUniformLocation(shader, "u_normalMatrix");
-    shader.u_time = gl.getUniformLocation(shader, "u_time");
 
 
-    // MVP
-    let deepth = 5;
-    let model = new Matrix4();
-    // model.setRotate(t, 1, 0, 0);
-    let view = new Matrix4();
-    let proje = new Matrix4();
-    view.setLookAt(0, 0, deepth, 0, 0, 0, 0, 1, 0);
-    proje.setPerspective(30, $('#renderer').width()/$('#renderer').height(), 1, 100);
+$('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);
+$('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
+$('#renderer').width(window.innerWidth);
+$('#renderer').height(window.innerHeight);
 
-    let nm = new Matrix4();
-    shader.u_normalMatrix = gl.getUniformLocation(shader, "u_normalMatrix");
-    nm.setInverseOf(model);
-    nm.transpose();
-
-    gl.uniformMatrix4fv(shader.u_M, false, model.elements);
-    gl.uniformMatrix4fv(shader.u_V, false, view.elements);
-    gl.uniformMatrix4fv(shader.u_P, false, proje.elements);
-    gl.uniformMatrix4fv(shader.u_normalMatrix, false, nm.elements);
-    gl.uniform1f(shader.u_time, t);
-
-    attributeBuffer(shader.a_Position, vert, 3, gl.FLOAT);
-    attributeBuffer(shader.a_Normal, normal, 3, gl.FLOAT);
-
-    let buf = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, map, gl.STATIC_DRAW);
-
-    gl.drawElements(gl.TRIANGLES, map.length, gl.UNSIGNED_SHORT, 0);
-}
+$(window).resize(() => {
+    $('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);
+    $('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
+    $('#renderer').width(window.innerWidth);
+    $('#renderer').height(window.innerHeight);
+});
 
 
-function texture(gl, channel, level, format, width, height, border, type, data) {
-    gl.activeTexture([
-        gl.TEXTURE0,
-        gl.TEXTURE1,
-        gl.TEXTURE2,
-        gl.TEXTURE3,
-        gl.TEXTURE4,
-        gl.TEXTURE5,
-        gl.TEXTURE6,
-        gl.TEXTURE7
-    ][channel]);
-    tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    gl.texImage2D(gl.TEXTURE_2D, level, format, width, height, border, format, type, data);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-}
 
-let mesh = GenerateSphere(1.0, 60);
-ss_render(gl);
+
+
+
+
+// function renderMesh(gl, vert, normal, map, t) {
+//     gl.clearColor(0.4,0.4,0.4, 1.0);
+//     gl.enable(gl.DEPTH_TEST);
+//     gl.enable(gl.BLEND);
+//     gl.blendFunc(gl.SRC_ALPHA, gl.ADD);
+//     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
+
+
+//     let shader = gl.createProgram();
+//     gl.attachShader(shader, getShader('Shader-vs', gl));
+//     gl.attachShader(shader, getShader('Shader-fs', gl));
+//     gl.linkProgram(shader);
+//     gl.useProgram(shader);
+//     // Attributes
+//     shader.a_Position   = gl.getAttribLocation(shader, 'a_Position');
+//     shader.a_Color      = gl.getAttribLocation(shader, 'a_Color');
+//     shader.a_Normal     = gl.getAttribLocation(shader, 'a_Normal');
+//     shader.a_texCoord   = gl.getAttribLocation(shader, 'a_texCoord');
+//     // Uniform
+//     shader.u_M = gl.getUniformLocation(shader, "u_M");
+//     shader.u_V = gl.getUniformLocation(shader, "u_V");
+//     shader.u_P = gl.getUniformLocation(shader, "u_P");
+//     shader.u_normalMatrix = gl.getUniformLocation(shader, "u_normalMatrix");
+//     shader.u_time = gl.getUniformLocation(shader, "u_time");
+
+
+//     // MVP
+//     let deepth = 5;
+//     let model = new Matrix4();
+//     // model.setRotate(t, 1, 0, 0);
+//     let view = new Matrix4();
+//     let proje = new Matrix4();
+//     view.setLookAt(0, 0, deepth, 0, 0, 0, 0, 1, 0);
+//     proje.setPerspective(30, $('#renderer').width()/$('#renderer').height(), 1, 100);
+
+//     let nm = new Matrix4();
+//     shader.u_normalMatrix = gl.getUniformLocation(shader, "u_normalMatrix");
+//     nm.setInverseOf(model);
+//     nm.transpose();
+
+//     gl.uniformMatrix4fv(shader.u_M, false, model.elements);
+//     gl.uniformMatrix4fv(shader.u_V, false, view.elements);
+//     gl.uniformMatrix4fv(shader.u_P, false, proje.elements);
+//     gl.uniformMatrix4fv(shader.u_normalMatrix, false, nm.elements);
+//     gl.uniform1f(shader.u_time, t);
+
+//     attributeBuffer(shader.a_Position, vert, 3, gl.FLOAT);
+//     attributeBuffer(shader.a_Normal, normal, 3, gl.FLOAT);
+
+//     let buf = gl.createBuffer();
+//     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
+//     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, map, gl.STATIC_DRAW);
+
+//     gl.drawElements(gl.TRIANGLES, map.length, gl.UNSIGNED_SHORT, 0);
+// }
+
+
+
+
+// let mesh = GenerateSphere(1.0, 60);
+// ss_render(gl);
 // renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, 0);
-let t = 0;
+// let t = 0;
 // setInterval(()=>{renderMesh(gl, mesh.vertices, mesh.normals, mesh.map, t++);}, 100);
-setInterval(()=>{
-    ss_render(gl);
-}, 1000);
+// setInterval(()=>{
+//     vue.ss_render();
+// }, 1000);
