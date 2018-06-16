@@ -6,5 +6,5 @@ webglMixin(frag3d);
 meshMixin(frag3d);
 
 
-let frag = new frag3d('renderer');
-frag.ss_render();
+let fr = new frag3d('renderer');
+fr.ss_render();
