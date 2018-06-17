@@ -56,10 +56,13 @@ function meshMixin(frag3d) {
             index.push(i);
 
         let group = [];
+        const size = 1024-1;
         for(let i = 0; i < index.length/3; i++) {
-            group.push(1/index.length * i, 1/index.length * i);
-            group.push(1/index.length * i, 1/index.length * i);
-            group.push(1/index.length * i, 1/index.length * i);
+            let u = 1/size * (i%size);
+            let v = 1/size * (i/size);
+            group.push(u, v);
+            group.push(u, v);
+            group.push(u, v);
         }
         return {
             vertices: new Float32Array(vet),

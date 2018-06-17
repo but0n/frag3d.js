@@ -43,11 +43,11 @@ shader.a_Normal = [mesh.normals, 3, fr.gl.FLOAT];
 shader.a_UV = [mesh.texCoords, 2, fr.gl.FLOAT];
 
 let sampler = [];
-let size = 4096*2;
-for(let i = 0; i < size; i++) {
+let size = 1024;
+for(let i = 0; i < size**2; i++) {
     sampler.push(255*Math.random(), 255*Math.random(), 255*Math.random());
 }
-fr.genTexture(0, 0, fr.gl.RGB, size, 1, 0, fr.gl.UNSIGNED_BYTE, new Uint8Array(sampler));
+fr.genTexture(0, 0, fr.gl.RGB, size, size, 0, fr.gl.UNSIGNED_BYTE, new Uint8Array(sampler));
 shader.u_tex0 = 0;
 
 fr.bindBuffer(mesh.map, fr.gl.STATIC_DRAW);
@@ -68,5 +68,5 @@ setTimeout(() => {
             // clearInterval(proce);
         // }
     }, 1)
-}, 3000)
+}, 1000)
 // fr.ss_render();
