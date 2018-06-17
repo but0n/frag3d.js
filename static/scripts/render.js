@@ -244,10 +244,11 @@ function webglMixin(frag3d) {
         ]), gl.STATIC_DRAW);
 
         let sampler = [];
-        for(let i = 0; i < 65536; i++) {
+        let size = 4096*2;
+        for(let i = 0; i < size; i++) {
             sampler.push(255*Math.random(), 255*Math.random(), 255*Math.random());
         }
-        this.genTexture(0, 0, gl.RGB, 256, 256, 0, gl.UNSIGNED_BYTE, new Uint8Array(sampler));
+        this.genTexture(0, 0, gl.RGB, size, 1, 0, gl.UNSIGNED_BYTE, new Uint8Array(sampler));
         // gl.uniform1i(shader.data, 0);
         shader.data = 0;
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);

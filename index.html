@@ -32,7 +32,7 @@
             attribute vec3 a_Position;
             attribute vec3 a_Color;
             attribute vec3 a_Normal;
-            attribute vec2 a_texCoord;
+            attribute vec2 a_UV;
             // MVP
             uniform mat4 u_M;
             uniform mat4 u_V;
@@ -44,6 +44,10 @@
             varying vec3 v_normal;      // 每个片元的法线
             varying vec3 v_pos;         // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
+
+            uniform sampler2D u_tex0;
+
+
             vec3 rotateVec3(vec3 p, float angle, vec3 axis){
                 vec3 a = normalize(axis);
                 float s = sin(angle);
@@ -66,13 +70,17 @@
                 return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
             }
             void main () {
-                vec3 p = rotateVec3(a_Position, radians(2.0* u_time), normalize(vec3(0, 7, 0) * a_Position.xyz));
-                p = rotateVec3(p, radians(0.5 * u_time), normalize(vec3(0, 0, 2) * a_Position.xyz));
-                p = rotateVec3(p, radians(10.0 * u_time), normalize(vec3(9, 9, 2) * a_Position.xyz));
+                vec3 deltaV = texture2D(u_tex0,a_UV).rgb;
+
+                // vec3 p = rotateVec3(a_Position, radians(2.0* u_time), normalize(vec3(0, 7, 0) * a_Position.xyz));
+                // p = rotateVec3(p, radians(0.5 * u_time), normalize(vec3(0, 0, 2) * a_Position.xyz));
+                // p = rotateVec3(p, radians(10.0 * u_time), normalize(vec3(9, 9, 2) * a_Position.xyz));
+
+                vec3 p = a_Position + (deltaV - 0.5) * u_time * u_time * 0.01;
                 gl_Position = u_P * u_V * u_M * vec4(p, 1);
                 v_pos = vec3(u_M * vec4(a_Position, 1));   // 每个片元的世界坐标
                 v_normal = vec3(u_normalMatrix * vec4(a_Normal, 1));  // 每个片元的法线
-                v_texCoord = a_texCoord;
+                v_texCoord = a_UV;
                 gl_PointSize  = 1.0;
             }
         </script>
@@ -81,23 +89,26 @@
 
             #define PI              3.1415926535898
             precision mediump float;
-            uniform sampler2D u_tex0;
 
             varying vec3 v_normal;          // 每个片元的法线
             varying vec3 v_pos;             // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
+            // uniform sampler2D u_tex0;
 
             void main () {
 
                 vec3 n = normalize(v_normal);
 
-                vec3 l = normalize(vec3(0, 10, 10));
+                vec3 l = normalize(vec3(10, 10, 10));
+
+                // vec3 deltaV = texture2D(u_tex0,v_texCoord).rgb;
 
                 // Diffuse
-                vec3 diffuseContrib = vec3(1.0) * max(dot(n, l), 0.0);
+                vec3 diffuseContrib = vec3(1) * max(dot(n, l), 0.0);
 
                 // Final Result
                 gl_FragColor = vec4(diffuseContrib, 1);
+                // gl_FragColor = vec4(deltaV, 1);
             }
         </script>
 

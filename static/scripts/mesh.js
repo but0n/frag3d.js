@@ -55,82 +55,94 @@ function meshMixin(frag3d) {
         for(let i = 0; i < vet.length/3; i++)
             index.push(i);
 
+        let group = [];
+        for(let i = 0; i < index.length/3; i++) {
+            group.push(1/index.length * i, 1/index.length * i);
+            group.push(1/index.length * i, 1/index.length * i);
+            group.push(1/index.length * i, 1/index.length * i);
+        }
         return {
             vertices: new Float32Array(vet),
             map: new Uint16Array(index),
             color: new Float32Array(col),
-            texCoords: new Float32Array(uv),
-            normals: new Float32Array(nor)
+            texCoords: new Float32Array(group),
+            normals: new Float32Array(nor),
+            group: new Float32Array(group),
         };
     }
 }
 
-function GenerateSphere(radius, sagment) {
-    this.r = (c) => Math.PI*c/180.0
-    cos = (c) => Math.cos(this.r(c));
-    sin = (c) => Math.sin(this.r(c));
-// Vertex
-    let del = 360/sagment;
-    let vet = [];
-    let index = [];
-    let nor = [];
-    let col = [];
-    let tex = [];
-    let n, a, b, c, d;
+// function GenerateSphere(radius, sagment) {
+//     this.r = (c) => Math.PI*c/180.0
+//     cos = (c) => Math.cos(this.r(c));
+//     sin = (c) => Math.sin(this.r(c));
+// // Vertex
+//     let del = 360/sagment;
+//     let vet = [];
+//     let index = [];
+//     let nor = [];
+//     let col = [];
+//     let tex = [];
+//     let n, a, b, c, d;
 
-    for(let w = 0; w < 360; w+=del) {
-        for(let t = 0; t < 180-del; t+=del) {
-            a = [radius * sin(t) * cos(w), radius * cos(t), radius * sin(t) * sin(w)];
-            b = [radius * sin(t+del) * cos(w), radius * cos(t+del), radius * sin(t+del) * sin(w)];
-            c = [radius * sin(t+del) * cos(w+del), radius * cos(t+del), radius * sin(t+del) * sin(w+del)];
-            vet.push(...a, ...b, ...c);
-            col.push(Math.random(),Math.random(),Math.random());
-            col.push(Math.random(),Math.random(),Math.random());
-            col.push(Math.random(),Math.random(),Math.random());
-            let n = substractVectors(a, [0, 0, 0]);
-            nor.push(...n);
-            n = substractVectors(b, [0, 0, 0]);
-            nor.push(...n);
-            n = substractVectors(c, [0, 0, 0]);
-            nor.push(...n);
-            //  UV
-            uv.push(-w/360, t/180);             // a
-            uv.push(-w/360, (t+del)/180);       // b
-            uv.push(-(w+del)/360, (t+del)/180); // c
-            if((t!=0) && t!=(180)) { // top or bottom spot
-                d = [radius * sin(t) * cos(w + del), radius * cos(t), radius * sin(t) * sin(w + del)];
-                vet.push(...a);
-                vet.push(...c);
-                vet.push(...d);
+//     for(let w = 0; w < 360; w+=del) {
+//         for(let t = 0; t < 180-del; t+=del) {
+//             a = [radius * sin(t) * cos(w), radius * cos(t), radius * sin(t) * sin(w)];
+//             b = [radius * sin(t+del) * cos(w), radius * cos(t+del), radius * sin(t+del) * sin(w)];
+//             c = [radius * sin(t+del) * cos(w+del), radius * cos(t+del), radius * sin(t+del) * sin(w+del)];
+//             vet.push(...a, ...b, ...c);
+//             col.push(Math.random(),Math.random(),Math.random());
+//             col.push(Math.random(),Math.random(),Math.random());
+//             col.push(Math.random(),Math.random(),Math.random());
+//             let n = substractVectors(a, [0, 0, 0]);
+//             nor.push(...n);
+//             n = substractVectors(b, [0, 0, 0]);
+//             nor.push(...n);
+//             n = substractVectors(c, [0, 0, 0]);
+//             nor.push(...n);
+//             //  UV
+//             uv.push(-w/360, t/180);             // a
+//             uv.push(-w/360, (t+del)/180);       // b
+//             uv.push(-(w+del)/360, (t+del)/180); // c
+//             if((t!=0) && t!=(180)) { // top or bottom spot
+//                 d = [radius * sin(t) * cos(w + del), radius * cos(t), radius * sin(t) * sin(w + del)];
+//                 vet.push(...a);
+//                 vet.push(...c);
+//                 vet.push(...d);
 
-                let n = substractVectors(a, [0, 0, 0]);
-                nor.push(...n);
-                n = substractVectors(c, [0, 0, 0]);
-                nor.push(...n);
-                n = substractVectors(d, [0, 0, 0]);
-                nor.push(...n);
+//                 let n = substractVectors(a, [0, 0, 0]);
+//                 nor.push(...n);
+//                 n = substractVectors(c, [0, 0, 0]);
+//                 nor.push(...n);
+//                 n = substractVectors(d, [0, 0, 0]);
+//                 nor.push(...n);
 
-                //  UV
-                uv.push(-w/360, t/180);             // a
-                uv.push(-(w+del)/360, (t+del)/180); // c
-                uv.push(-(w+del)/360, t/180);       // d
+//                 //  UV
+//                 uv.push(-w/360, t/180);             // a
+//                 uv.push(-(w+del)/360, (t+del)/180); // c
+//                 uv.push(-(w+del)/360, t/180);       // d
 
-            }
+//             }
 
 
-        }
-    }
-    for(let i = 0; i < vet.length/3; i++)
-        index.push(i);
+//         }
+//     }
+//     for(let i = 0; i < vet.length/3; i++)
+//         index.push(i);
 
-    return {
-        vertices: new Float32Array(vet),
-        map: new Uint16Array(index),
-        color: new Float32Array(col),
-        texCoords: new Float32Array(tex),
-        normals: new Float32Array(nor)
-    };
-}
+//     let group = [];
+//     for(let i = 0; i < vet.length; i++) {
+//         group.push(0.5,1/vet.length * i);
+//     }
+
+//     return {
+//         vertices: new Float32Array(vet),
+//         map: new Uint16Array(index),
+//         color: new Float32Array(col),
+//         texCoords: new Float32Array(tex),
+//         normals: new Float32Array(nor),
+//     };
+// }
 
 function cross(a, b) {
     return [
