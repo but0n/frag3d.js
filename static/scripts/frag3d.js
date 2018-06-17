@@ -32,10 +32,10 @@ let nm = new Matrix4();
 nm.setInverseOf(model);
 nm.transpose();
 
-shader.u_M = [false, model.elements];
-shader.u_V = [false, view.elements];
-shader.u_P = [false, proje.elements];
-shader.u_normalMatrix = [false, nm.elements];
+shader.u_M = model.elements;
+shader.u_V = view.elements;
+shader.u_P = proje.elements;
+shader.u_normalMatrix = nm.elements;
 shader.u_time = 1;
 
 shader.a_Position = [mesh.vertices, 3, fr.gl.FLOAT];
