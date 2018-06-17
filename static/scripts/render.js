@@ -11,6 +11,8 @@ function webglMixin(frag3d) {
         this.renderer = document.getElementById(id);
         this.gl = this.renderer.getContext('webgl');
         this.gl.getExtension("OES_standard_derivatives"); // TBN required
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.enable(this.gl.BLEND);
     }
 
 
@@ -19,8 +21,7 @@ function webglMixin(frag3d) {
     // Compile shader
     frag3d.prototype.getShader = function(code, type) {
         let gl = this.gl;
-        let shader;
-        shader = gl.createShader(type);
+        let shader = gl.createShader(type);
         gl.shaderSource(shader, code);
         gl.compileShader(shader);
         if(gl.getShaderParameter(shader, gl.COMPILE_STATUS) === true)
@@ -33,11 +34,10 @@ function webglMixin(frag3d) {
         let gl = this.gl;
         let dom = document.getElementById(id);
         if(dom.type === 'x-shader/x-vertex') {
-            shader = this.getShader(dom.text, gl.VERTEX_SHADER);
+            return this.getShader(dom.text, gl.VERTEX_SHADER);
         } else if(dom.type === 'x-shader/x-fragment') {
-            shader = this.getShader(dom.text, gl.FRAGMENT_SHADER);
+            return this.getShader(dom.text, gl.FRAGMENT_SHADER);
         }
-        return shader;
     }
 
     frag3d.prototype.getUnifSetter = function(type) {
@@ -83,44 +83,50 @@ function webglMixin(frag3d) {
         }
     }
 
-    frag3d.prototype.useShader = function(s1, s2, Attributes, Uniforms) {
+    frag3d.prototype.useShader = function(s1, s2) {
         let gl = this.gl;
         let shader = gl.createProgram();
         gl.attachShader(shader, s1);
         gl.attachShader(shader, s2);
         gl.linkProgram(shader);
         gl.useProgram(shader);
-        return this.setupShader(shader, Attributes, Uniforms);
+        return this.setupShader(shader);
     }
 
-    frag3d.prototype.useShaderByID = function(id1, id2, Attributes, Uniforms) {
-        return this.useShader(
-            this.getShaderByID(id1),
-            this.getShaderByID(id2),
-            Attributes,
-            Uniforms,
-        );
+    frag3d.prototype.useShaderByID = function(id1, id2) {
+        return this.useShader(this.getShaderByID(id1), this.getShaderByID(id2));
     }
 
-    frag3d.prototype.setupShader = function(shader, Attributes, Uniforms) {
-        let obj = {};
+    frag3d.prototype.setupShader = function(shader) {
+        const obj = {};
         obj.program = shader;
-        for(attr of Attributes) {
-            obj[attr] = this.gl.getAttribLocation(shader, attr);
+        const attrAmount = this.gl.getProgramParameter(shader, this.gl.ACTIVE_ATTRIBUTES);
+        for(let i = 0; i < attrAmount; i++) {
+            const {name} = this.gl.getActiveAttrib(shader, i);
+            const loc = obj[name] = this.gl.getAttribLocation(shader, name);
+            const ob = {};
+            ob.get = () => i;
+            ob.set = data => {
+                this.bindAttribute(loc, ...data);
+            }
+            Object.defineProperty(obj, name, ob);
+
         }
-        for(unif of Uniforms) {
-            let location = obj[unif] = this.gl.getUniformLocation(shader, unif);
-            let {type} = this.gl.getActiveUniform(shader, location);
-            let ob = {};
-            ob.get = () => null;
-            let setter = this.getUnifSetter(type);
+        const unifAmount = this.gl.getProgramParameter(shader, this.gl.ACTIVE_UNIFORMS);
+        for(let i = 0; i < unifAmount; i++) {
+            const {name, type} = this.gl.getActiveUniform(shader, i);
+            const loc = obj[name] = this.gl.getUniformLocation(shader, name);
+            const setter = this.getUnifSetter(type);
+            const ob = {};
+            ob.get = () => i;
             ob.set = data => {
                 if(data.length)
-                    this.gl[setter](location, ...data);
+                    this.gl[setter](loc, ...data);
                 else
-                    this.gl[setter](location, data);
+                    this.gl[setter](loc, data);
             }
-            Object.defineProperty(obj, unif, ob);
+            Object.defineProperty(obj, name, ob);
+
         }
         return obj;
     }
@@ -216,22 +222,21 @@ function webglMixin(frag3d) {
             'gpgpu-vs',
             'gpgpu-fs',
             ['a_Position', 'a_texCoord'],
-            ['data'],
         );
         this.mainShader = shader;
 
-        this.bindAttribute(shader.a_Position, new Float32Array([  // Vertex Postion
+        shader.a_Position = [new Float32Array([  // Vertex Postion
             -1, 1, 0.0,
             1, 1, 0.0,
             1, -1, 0.0,
             -1, -1, 0.0
-        ]), 3, gl.FLOAT);
-        this.bindAttribute(shader.a_texCoord, new Float32Array([  // TexCoord
+        ]), 3, gl.FLOAT];
+        shader.a_texCoord = [new Float32Array([  // TexCoord
             0.0, 1.0,
             1.0, 1.0,
             1.0, 0.0,
             0.0, 0.0
-        ]), 2, gl.FLOAT);
+        ]), 2, gl.FLOAT];
 
         this.bindBuffer(new Uint16Array([
             0, 1, 2,

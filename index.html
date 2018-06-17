@@ -97,7 +97,7 @@
                 vec3 diffuseContrib = vec3(1.0) * max(dot(n, l), 0.0);
 
                 // Final Result
-                gl_FragColor = vec4(n, 1);
+                gl_FragColor = vec4(diffuseContrib, 1);
             }
         </script>
 
