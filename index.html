@@ -28,8 +28,8 @@
             }
         </script>
         <script id="Shader-vs" type="x-shader/x-vertex">
-            #define OFFSET_START_AT 300.0
-            #define ROTATE_START_AT 50.0
+            #define OFFSET_STOP_AT 1000.0
+            #define ROTATE_START_AT 10.0
             // Mesh
             attribute vec3 a_Position;
             attribute vec3 a_Color;
@@ -75,15 +75,15 @@
 
             vec3 offsetAnimation(vec4 data) {
                 vec3 v = data.rgb - 0.5;    // direction
-                float a = min(data.a * 0.0001, 0.0005);
-                float t = min(u_time, OFFSET_START_AT);
+                float a = min(data.a * 0.0001, 0.005);
+                float t = min(u_time, OFFSET_STOP_AT);
                 vec3 offset_distance = v * a * t * t;
                 return offset_distance;
             }
             vec3 rotateAnimation(vec4 data, vec3 pos) {
                 vec3 axis = normalize(data.rgb - 0.5);    // direction
                 float t = max(u_time-ROTATE_START_AT, 0.0);
-                float rad = data.a * 0.01;    // 角速度
+                float rad = data.a * 0.0001;    // 角速度
                 vec3 rot = rotateVec3(pos, rad * t, axis);
                 return rot;
             }

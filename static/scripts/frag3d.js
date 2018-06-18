@@ -54,22 +54,24 @@ shader.u_noise = 0;
 fr.bindBuffer(mesh.map, fr.gl.STATIC_DRAW);
 fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
 let a = 0;
-// setTimeout(() => {
-//     let proce = setInterval(() => {
-//         t+=a;
-//         // else if(t>0)
-//         //     t = t - 1;
-//         // if(t <= 2)
-//         // if(Math.round(t) == 18)
-//         if(a < 0.26) {
-//             a += 0.00002;
-//         }
-//         shader.u_time = t;
-//         fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
-//             // clearInterval(proce);
-//         // }
-//     }, 1)
-// }, 1000)
+setTimeout(() => {
+    let proce = setInterval(() => {
+        t+=a;
+        if(a < 2) {
+            a+=0.01;
+        }
+        const round = Math.floor(t/300);
+        if(round == 2)
+            t = 0;
+        if(round == 1)
+            shader.u_time = t - (t-300) * 2;
+        else
+            shader.u_time = t;
+        fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
+            // clearInterval(proce);
+        // }
+    }, 16)
+}, 1000)
 // fr.ss_render();
 
 fr.bindMousemove(model, shader.u_M, nm, shader.u_normalMatrix, () => {
