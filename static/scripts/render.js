@@ -281,14 +281,3 @@ function webglMixin(frag3d) {
 
 
 
-$('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);
-$('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
-$('#renderer').width(window.innerWidth);
-$('#renderer').height(window.innerHeight);
-
-$(window).resize(() => {
-    $('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);
-    $('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
-    $('#renderer').width(window.innerWidth);
-    $('#renderer').height(window.innerHeight);
-});

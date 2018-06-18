@@ -6,6 +6,19 @@ webglMixin(frag3d);
 meshMixin(frag3d);
 ctrMixin(frag3d);
 
+$('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);
+$('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
+$('#renderer').width(window.innerWidth);
+$('#renderer').height(window.innerHeight);
+$('.title').height(window.innerHeight);
+
+$(window).resize(() => {
+    $('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);
+    $('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
+    $('#renderer').width(window.innerWidth);
+    $('#renderer').height(window.innerHeight);
+});
+
 
 let fr = new frag3d('renderer');
 let mesh = fr.GenSphere(1.0, 50);
@@ -56,7 +69,7 @@ fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
 let a = 0;
 
 
-fr.bindMousemove(model, shader.u_M, nm, shader.u_normalMatrix, () => {
+fr.bindMousemove('.content', model, shader.u_M, nm, shader.u_normalMatrix, () => {
     shader.u_M = model.elements;
     fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
 });

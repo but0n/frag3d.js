@@ -1,12 +1,12 @@
 function ctrMixin(frag3d) {
-    frag3d.prototype.bindMousemove = function(mod, modunif, normal, normalunif, refresh) {
+    frag3d.prototype.bindMousemove = function(id, mod, modunif, normal, normalunif, refresh) {
 
         this.ctr = {x: 0, y: 0};
         this.ctr_initial = false; // Initial flag
         [vx, vy] = [0,0];
 
 
-        $('#'+this.id).mousemove((e) => {
+        $(id).mousemove((e) => {
             if(this.ctr_initial) {
                 const delX = e.clientX - this.ctr.x;
                 const delY = e.clientY - this.ctr.y;
