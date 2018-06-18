@@ -45,7 +45,7 @@
             varying vec3 v_pos;         // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
 
-            uniform sampler2D u_tex0;
+            uniform sampler2D u_noise;
 
 
             vec3 rotateVec3(vec3 p, float angle, vec3 axis){
@@ -69,14 +69,30 @@
             float rand(vec2 co){
                 return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
             }
+
+            vec3 offsetAnimation(vec4 data) {
+                vec3 v = data.rgb - 0.5;    // direction
+                float a = data.a * 0.01;
+                vec3 offset_distance = v * a * u_time;
+                return offset_distance;
+            }
+            vec3 rotateAnimation(vec4 data, vec3 pos) {
+                vec3 axis = normalize(data.rgb - 0.5);    // direction
+                float rad = data.a * 0.01;    // 角速度
+                vec3 rot = rotateVec3(pos, rad * u_time, axis);
+                return rot;
+            }
             void main () {
-                vec3 deltaV = texture2D(u_tex0,a_UV).rgb;
+                vec3 deltaV = texture2D(u_noise,a_UV).rgb;
 
                 // vec3 p = rotateVec3(a_Position, radians(2.0* u_time), normalize(vec3(0, 7, 0) * a_Position.xyz));
                 // p = rotateVec3(p, radians(0.5 * u_time), normalize(vec3(0, 0, 2) * a_Position.xyz));
                 // p = rotateVec3(p, radians(10.0 * u_time), normalize(vec3(9, 9, 2) * a_Position.xyz));
 
-                vec3 p = a_Position + (deltaV - 0.5) * u_time * u_time * 0.01;
+                // vec3 p = a_Position + (deltaV - 0.5) * u_time * u_time * 0.01;
+                vec4 data = texture2D(u_noise, a_UV);
+                vec3 p = a_Position + offsetAnimation(data);
+                p = rotateAnimation(data, p);
                 gl_Position = u_P * u_V * u_M * vec4(p, 1);
                 v_pos = vec3(u_M * vec4(a_Position, 1));   // 每个片元的世界坐标
                 v_normal = vec3(u_normalMatrix * vec4(a_Normal, 1));  // 每个片元的法线
@@ -93,7 +109,7 @@
             varying vec3 v_normal;          // 每个片元的法线
             varying vec3 v_pos;             // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
-            // uniform sampler2D u_tex0;
+            // uniform sampler2D u_noise;
 
             void main () {
 
@@ -101,7 +117,7 @@
 
                 vec3 l = normalize(vec3(10, 10, 10));
 
-                // vec3 deltaV = texture2D(u_tex0,v_texCoord).rgb;
+                // vec3 deltaV = texture2D(u_noise,v_texCoord).rgb;
 
                 // Diffuse
                 vec3 diffuseContrib = vec3(1) * max(dot(n, l), 0.0);
