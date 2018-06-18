@@ -73,8 +73,8 @@
 
             vec3 offsetAnimation(vec4 data) {
                 vec3 v = data.rgb - 0.5;    // direction
-                float a = data.a * 0.01;
-                vec3 offset_distance = v * a * u_time;
+                float a = min(data.a * 0.0001, 0.0005);
+                vec3 offset_distance = v * a * u_time * u_time;
                 return offset_distance;
             }
             vec3 rotateAnimation(vec4 data, vec3 pos) {

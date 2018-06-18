@@ -73,14 +73,7 @@ let a = 0;
 
 $('#renderer').bind('wheel', function(e){
     const delta = Math.round(e.originalEvent.deltaY);
-    console.log(delta);
     a += delta;
     shader.u_time = a;
     fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
-
-    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
-    // deepth += delta*.1;
-    // view.setLookAt(0, 0, deepth, 0, 0, 0, 0, 1, 0);
-    // gl.uniformMatrix4fv(viewLocation, false, view.elements);
-    // gl.drawElements(gl.TRIANGLES, mod.map.length, gl.UNSIGNED_SHORT, 0); // Render
 });
