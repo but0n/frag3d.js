@@ -54,25 +54,7 @@ shader.u_noise = 0;
 fr.bindBuffer(mesh.map, fr.gl.STATIC_DRAW);
 fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
 let a = 0;
-setTimeout(() => {
-    let proce = setInterval(() => {
-        t+=a;
-        if(a < 2) {
-            a+=0.01;
-        }
-        const round = Math.floor(t/300);
-        if(round == 2)
-            t = 0;
-        if(round == 1)
-            shader.u_time = t - (t-300) * 2;
-        else
-            shader.u_time = t;
-        fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
-            // clearInterval(proce);
-        // }
-    }, 16)
-}, 1000)
-// fr.ss_render();
+
 
 fr.bindMousemove(model, shader.u_M, nm, shader.u_normalMatrix, () => {
     shader.u_M = model.elements;
@@ -80,9 +62,24 @@ fr.bindMousemove(model, shader.u_M, nm, shader.u_normalMatrix, () => {
 });
 
 
-$('#renderer').bind('wheel', function(e){
-    const delta = Math.round(e.originalEvent.deltaY);
-    a += delta;
-    shader.u_time = a;
-    fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
+
+let lastScroll = 0;
+let vScroll = 0;
+$(window).scroll(() => {
+    const delta = $(window).scrollTop() - lastScroll;
+
+    if(Math.abs(vScroll) < Math.abs(delta))
+        vScroll += delta * 0.5;
+    lastScroll = $(window).scrollTop();
 });
+
+
+setInterval(() => {
+    const threshold = 0.0001;
+    const damping = 0.999;
+    if (Math.abs(vScroll) < threshold)
+        return;
+    vScroll *= damping;
+    shader.u_time = lastScroll - vScroll;
+    fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
+}, 1);

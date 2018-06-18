@@ -7,9 +7,10 @@
     src: url('digital_(mono).ttf') format('truetype');
 }
 body {
+	height: 6000px;
 	padding: 0;
 	font-family: Verdana, Geneva, Tahoma, sans-serif;
-    position: relative;
+    position: absolute;
     margin: 0;
 	background-color: #ededed;
 	display: flex;
@@ -35,9 +36,12 @@ body {
 
 
 #renderer {
-	background-color: rgb(218, 218, 218);
-	position: absolute;
+	position: fixed;
+	top: 0;
+	left: 0;
+	/* background-color: rgb(218, 218, 218); */
 	width: 3px;
 	height: 2px;
 	cursor: crosshair;
+	z-index: -1;
 }
