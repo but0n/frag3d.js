@@ -75,24 +75,16 @@ fr.bindMousemove('.content', model, shader.u_M, nm, shader.u_normalMatrix, () =>
 });
 
 
-
 let lastScroll = 0;
-let vScroll = 0;
-$(window).scroll(() => {
-    const delta = $(window).scrollTop() - lastScroll;
 
-    if(Math.abs(vScroll) < Math.abs(delta))
-        vScroll += delta * 0.5;
-    lastScroll = $(window).scrollTop();
+fr.damping('vScroll', () => {
+    shader.u_time = lastScroll - fr.vScroll;
+    fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
 });
 
-
-setInterval(() => {
-    const threshold = 0.0001;
-    const damping = 0.999;
-    if (Math.abs(vScroll) < threshold)
-        return;
-    vScroll *= damping;
-    shader.u_time = lastScroll - vScroll;
-    fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
-}, 1);
+// let vScroll = 0;
+$(window).scroll(() => {
+    const delta = $(window).scrollTop() - lastScroll;
+    fr.vScroll += delta * 0.5;
+    lastScroll = $(window).scrollTop();
+});

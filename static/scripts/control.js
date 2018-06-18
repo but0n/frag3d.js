@@ -1,4 +1,19 @@
 function ctrMixin(frag3d) {
+    frag3d.prototype.taskQueue = [];
+    frag3d.prototype.damping = function(key, callback) {
+        if(!callback)
+            return;
+        this[key] = 0;
+        let task = setInterval(() => {
+                const threshold = 0.0001;
+                const damping = 0.99;
+                if (Math.abs(this[key]) < threshold)
+                    return;
+                this[key] *= damping;
+                callback();
+        }, 1);
+        this.taskQueue.push(task);
+    }
     frag3d.prototype.bindMousemove = function(id, mod, modunif, normal, normalunif, refresh) {
 
         this.ctr = {x: 0, y: 0};
@@ -10,11 +25,8 @@ function ctrMixin(frag3d) {
             if(this.ctr_initial) {
                 const delX = e.clientX - this.ctr.x;
                 const delY = e.clientY - this.ctr.y;
-
-                if(Math.abs(vx) < Math.abs(delX))
-                    vx += -delX * 0.001;
-                if (Math.abs(vy) < Math.abs(delY))
-                    vy += delY * 0.001;
+                vx += -delX * 0.001;
+                vy += delY * 0.001;
             } else {
                 this.ctr_initial = true;
             }
