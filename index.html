@@ -28,6 +28,8 @@
             }
         </script>
         <script id="Shader-vs" type="x-shader/x-vertex">
+            #define OFFSET_START_AT 300.0
+            #define ROTATE_START_AT 50.0
             // Mesh
             attribute vec3 a_Position;
             attribute vec3 a_Color;
@@ -74,13 +76,15 @@
             vec3 offsetAnimation(vec4 data) {
                 vec3 v = data.rgb - 0.5;    // direction
                 float a = min(data.a * 0.0001, 0.0005);
-                vec3 offset_distance = v * a * u_time * u_time;
+                float t = min(u_time, OFFSET_START_AT);
+                vec3 offset_distance = v * a * t * t;
                 return offset_distance;
             }
             vec3 rotateAnimation(vec4 data, vec3 pos) {
                 vec3 axis = normalize(data.rgb - 0.5);    // direction
+                float t = max(u_time-ROTATE_START_AT, 0.0);
                 float rad = data.a * 0.01;    // 角速度
-                vec3 rot = rotateVec3(pos, rad * u_time, axis);
+                vec3 rot = rotateVec3(pos, rad * t, axis);
                 return rot;
             }
             void main () {
@@ -118,7 +122,7 @@
                 // vec3 deltaV = texture2D(u_noise,v_texCoord).rgb;
 
                 // Diffuse
-                vec3 diffuseContrib = vec3(v_color) * max(dot(n, l), 0.0) + vec3(0.2);
+                vec3 diffuseContrib = vec3(v_color) * max(dot(n, l), 0.0);
 
                 // Final Result
                 gl_FragColor = vec4(pow(diffuseContrib, vec3(2)), 1);
@@ -131,6 +135,7 @@
         <script src="static/scripts/cuon-matrix.js"></script>
         <script src="static/scripts/mesh.js"></script>
         <script src="static/scripts/render.js"></script>
+        <script src="static/scripts/control.js"></script>
         <script src="static/scripts/frag3d.js"></script>
 
     </body>

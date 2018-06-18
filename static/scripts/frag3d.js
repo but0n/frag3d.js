@@ -4,6 +4,7 @@ function frag3d(id) {
 
 webglMixin(frag3d);
 meshMixin(frag3d);
+ctrMixin(frag3d);
 
 
 let fr = new frag3d('renderer');
@@ -70,6 +71,12 @@ let a = 0;
 //     }, 1)
 // }, 1000)
 // fr.ss_render();
+
+fr.bindMousemove(model, shader.u_M, nm, shader.u_normalMatrix, () => {
+    shader.u_M = model.elements;
+    fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
+});
+
 
 $('#renderer').bind('wheel', function(e){
     const delta = Math.round(e.originalEvent.deltaY);
