@@ -10,7 +10,7 @@ let fr = new frag3d('renderer');
 let mesh = fr.GenSphere(1.0, 50);
 
 
-fr.gl.clearColor(0.4,0.4,0.4, 1.0);
+fr.gl.clearColor(0,0,0,0);
 fr.gl.blendFunc(fr.gl.SRC_ALPHA, fr.gl.ADD);
 fr.gl.clear(fr.gl.COLOR_BUFFER_BIT | fr.gl.DEPTH_COLOR_BIT);
 

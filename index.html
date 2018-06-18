@@ -44,6 +44,7 @@
             varying vec3 v_normal;      // 每个片元的法线
             varying vec3 v_pos;         // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
+            varying vec3 v_color;
 
             uniform sampler2D u_noise;
 
@@ -84,12 +85,8 @@
             }
             void main () {
                 vec3 deltaV = texture2D(u_noise,a_UV).rgb;
+                v_color = vec3(0.25, 0.76, 1);
 
-                // vec3 p = rotateVec3(a_Position, radians(2.0* u_time), normalize(vec3(0, 7, 0) * a_Position.xyz));
-                // p = rotateVec3(p, radians(0.5 * u_time), normalize(vec3(0, 0, 2) * a_Position.xyz));
-                // p = rotateVec3(p, radians(10.0 * u_time), normalize(vec3(9, 9, 2) * a_Position.xyz));
-
-                // vec3 p = a_Position + (deltaV - 0.5) * u_time * u_time * 0.01;
                 vec4 data = texture2D(u_noise, a_UV);
                 vec3 p = a_Position + offsetAnimation(data);
                 p = rotateAnimation(data, p);
@@ -109,6 +106,7 @@
             varying vec3 v_normal;          // 每个片元的法线
             varying vec3 v_pos;             // 每个片元的位置
             varying vec2 v_texCoord;    // 每个片元的纹素坐标
+            varying vec3 v_color;
             // uniform sampler2D u_noise;
 
             void main () {
@@ -120,10 +118,10 @@
                 // vec3 deltaV = texture2D(u_noise,v_texCoord).rgb;
 
                 // Diffuse
-                vec3 diffuseContrib = vec3(1) * max(dot(n, l), 0.0);
+                vec3 diffuseContrib = vec3(v_color) * max(dot(n, l), 0.0) + vec3(0.2);
 
                 // Final Result
-                gl_FragColor = vec4(diffuseContrib, 1);
+                gl_FragColor = vec4(pow(diffuseContrib, vec3(2)), 1);
                 // gl_FragColor = vec4(deltaV, 1);
             }
         </script>
