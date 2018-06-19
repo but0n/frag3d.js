@@ -4,14 +4,16 @@ function ctrMixin(frag3d) {
         if(!callback)
             return;
         this[key] = 0;
-        let task = setInterval(() => {
-                const threshold = 0.0001;
-                const damping = 0.99;
-                if (Math.abs(this[key]) < threshold)
-                    return;
+        let task = () => {
+            const threshold = 0.0001;
+            const damping = 0.99;
+            if (Math.abs(this[key]) > threshold) {
                 this[key] *= damping;
                 callback();
-        }, 1);
+            }
+            window.requestAnimationFrame(task);
+        };
+        window.requestAnimationFrame(task);
         this.taskQueue.push(task);
     }
     frag3d.prototype.bindMousemove = function(id, mod, modunif, normal, normalunif, refresh) {
@@ -34,16 +36,18 @@ function ctrMixin(frag3d) {
             this.ctr.y = e.clientY;
             // console.table([vx, vy]);
         });
-        setInterval(() => {
+        let task = () => {
             const threshold = 0.001;
             const damping = 0.996;
-            if (Math.abs(vy) < threshold && Math.abs(vx) < threshold)
-                return;
+            if (Math.abs(vy) > threshold && Math.abs(vx) > threshold) {
                 vx *= damping;
                 vy *= damping;
-            this.rotateScene(mod, normal);
-            refresh();
-        }, 1);
+                this.rotateScene(mod, normal);
+                refresh();
+            }
+            window.requestAnimationFrame(task);
+        };
+        window.requestAnimationFrame(task);
     }
 
 
