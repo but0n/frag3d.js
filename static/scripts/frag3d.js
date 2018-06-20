@@ -6,11 +6,11 @@ webglMixin(frag3d);
 meshMixin(frag3d);
 ctrMixin(frag3d);
 
+
+document.body.style.setProperty('--window-width', window.innerWidth);
+document.body.style.setProperty('--window-height', window.innerHeight);
 $('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);
 $('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
-$('#renderer').width(window.innerWidth);
-$('#renderer').height(window.innerHeight);
-$('.title').height(window.innerHeight);
 
 // $(window).resize(() => {
 //     $('#renderer').attr('width', window.innerWidth*window.devicePixelRatio);

@@ -23,29 +23,22 @@ body {
 
 
 :root{
-	/* theme */
-	/* --theme-panel-color: rgb(83, 92, 99);
-	--theme-desktop-color: #459dc3;
-	--theme-node-color: #3e4c57;
-	--io-bar-highlight-color: rgba(255, 128, 0, 1);
-	--io-bar-color: rgba(255, 255, 255, .4); */
+	--window-width: 720;
+	--window-height: 480;
 }
 
 .content {
 	height: 6000px;
-	/* flex: 1 0 auto; */
 	width: 100%;
 	justify-content: center;
-	/* align-items: center; */
-
-	/* display: flex; */
 }
 
 .content > .title {
 	color: #ededed;
+	height: calc(var(--window-height) * 1px);
 	text-shadow: 0 0 30px #333;
 	display: flex;
-	font-size: 10em;
+	font-size: 6em;
 	font-family: Arial, Helvetica, sans-serif;
 	justify-content: center;
 	align-items: center;
@@ -60,8 +53,8 @@ body {
 	top: 0;
 	left: 0;
 	/* background-color: rgb(218, 218, 218); */
-	width: 3px;
-	height: 2px;
+	width: calc(var(--window-width) * 1px);
+	height: calc(var(--window-height) * 1px);
 	z-index: -1;
 }
 
