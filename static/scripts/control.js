@@ -44,8 +44,8 @@ function ctrMixin(frag3d) {
             if(this.ctr_initial) {
                 const delX = e.clientX - this.ctr.x;
                 const delY = e.clientY - this.ctr.y;
-                vx += -delX * 0.001;
-                vy += delY * 0.001;
+                vx += -delX * 0.005;
+                vy += delY * 0.005;
             } else {
                 this.ctr_initial = true;
             }
@@ -55,7 +55,7 @@ function ctrMixin(frag3d) {
         });
         let task = () => {
             const threshold = 0.001;
-            const damping = 0.996;
+            const damping = 0.98;
             if (Math.abs(vy) > threshold && Math.abs(vx) > threshold) {
                 vx *= damping;
                 vy *= damping;
