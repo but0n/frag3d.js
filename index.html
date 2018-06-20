@@ -101,7 +101,7 @@
                 vec3 p = a_Position + offsetAnimation(data);
                 p = rotateAnimation(data, p);
                 gl_Position = u_P * u_V * u_M * vec4(p, 1);
-                v_pos = vec3(u_M * vec4(a_Position, 1));   // 每个片元的世界坐标
+                v_pos = vec3(u_M * vec4(p, 1));   // 每个片元的世界坐标
                 v_normal = vec3(u_normalMatrix * vec4(a_Normal, 1));  // 每个片元的法线
                 v_texCoord = a_UV;
                 gl_PointSize  = 1.0;
@@ -123,15 +123,18 @@
 
                 vec3 n = normalize(v_normal);
 
-                vec3 l = normalize(vec3(10, 10, 10));
+                vec3 l = normalize(vec3(10, 10, 10) - v_pos);
+                vec3 lb = normalize(vec3(-10, -10, 10) - v_pos);
 
                 // vec3 deltaV = texture2D(u_noise,v_texCoord).rgb;
 
                 // Diffuse
                 vec3 diffuseContrib = vec3(v_color) * max(dot(n, l), 0.0);
+                diffuseContrib = max(diffuseContrib, v_color * 0.2);
+                diffuseContrib += vec3(v_color).grb * 0.6 * max(dot(n, lb), 0.0);
 
                 // Final Result
-                gl_FragColor = vec4(pow(diffuseContrib + 0.2, vec3(2)), 1);
+                gl_FragColor = vec4(pow(diffuseContrib, vec3(1)), 1);
                 // gl_FragColor = vec4(deltaV, 1);
             }
         </script>
