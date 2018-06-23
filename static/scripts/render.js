@@ -120,10 +120,16 @@ function webglMixin(frag3d) {
             const ob = {};
             ob.get = () => i;
             ob.set = data => {
-                if(this.gl[setter].length == 3)
-                    this.gl[setter](loc, false, data)
+                let glctx;
+                if(this.gl[setter].length == 0) {
+                    glctx = this.gl.rawgl;
+                } else {
+                    glctx = this.gl;
+                }
+                if(glctx[setter].length == 3)
+                    glctx[setter](loc, false, data)
                 else
-                    this.gl[setter](loc, data);
+                    glctx[setter](loc, data);
             }
             Object.defineProperty(obj, name, ob);
 
