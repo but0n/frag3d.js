@@ -127,9 +127,9 @@ function webglMixin(frag3d) {
                     glctx = this.gl;
                 }
                 if(glctx[setter].length == 3)
-                    glctx[setter](loc, false, data)
+                    this.gl[setter](loc, false, data)
                 else
-                    glctx[setter](loc, data);
+                    this.gl[setter](loc, data);
             }
             Object.defineProperty(obj, name, ob);
 
