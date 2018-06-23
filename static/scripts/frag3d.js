@@ -34,7 +34,9 @@ let shader = fr.useShaderByID('Shader-vs', 'Shader-fs');
 let t = 0;
 
 // MVP
-let deepth = 5;
+let deepth = window.innerWidth < window.innerHeight
+    ? 10
+    : 5;
 let model = new Matrix4();
 model.setRotate(t, 1, 0, 0);
 let view = new Matrix4();
