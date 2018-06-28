@@ -27,8 +27,8 @@ function ctrMixin(frag3d) {
                 if(this.ctr_initial) {
                     const delX = e.gamma - this.ctr.x;
                     const delY = e.beta - this.ctr.y;
-                    vx -= delX * 0.009;
-                    vy -= delY * 0.009;
+                    vx -= delX * 0.09;
+                    vy -= delY * 0.09;
                 } else {
                     this.ctr_initial = true;
                 }
