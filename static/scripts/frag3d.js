@@ -21,7 +21,12 @@ $('#renderer').attr('height', window.innerHeight*window.devicePixelRatio);
 
 
 let fr = new frag3d('renderer');
-let mesh = fr.GenSphere(1.0, 50);
+let mesh;
+if(location.hash != '') {
+    mesh = fr.GenSphere(1.0, location.hash.split('#')[1]*1);
+} else {
+    mesh = fr.GenSphere(1.0, 100);
+}
 
 
 fr.gl.clearColor(0,0,0,0);
