@@ -224,11 +224,7 @@ function webglMixin(frag3d) {
         gl.blendFunc(gl.SRC_ALPHA, gl.ADD);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
 
-        let shader = this.useShaderByID(
-            'gpgpu-vs',
-            'gpgpu-fs',
-            ['a_Position', 'a_texCoord'],
-        );
+        let shader = this.useShaderByID('gpgpu-vs', 'gpgpu-fs');
         this.mainShader = shader;
 
         shader.a_Position = [new Float32Array([  // Vertex Postion
