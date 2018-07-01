@@ -25,7 +25,7 @@ let mesh;
 if(location.hash != '') {
     mesh = fr.GenSphere(1.0, location.hash.split('#')[1]*1);
 } else {
-    mesh = fr.GenSphere(1.0, 100);
+    mesh = fr.GenSphere(1.0, 50);
 }
 
 
