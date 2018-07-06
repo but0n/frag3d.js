@@ -145,6 +145,16 @@ function webglMixin(frag3d) {
         this.gl.enableVertexAttribArray(attr);
     }
 
+    frag3d.prototype.bindVbo = function(data, stride, chunks) {
+        let buf = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
+        for(let v of chunks) {
+            this.gl.vertexAttribPointer(v.loc, v.size, v.type, false, stride, v.offset);
+            this.gl.enableVertexAttribArray(v.loc);
+        }
+    }
+
     frag3d.prototype.bindBuffer = function(data, type) {
         let buf = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, buf);

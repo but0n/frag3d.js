@@ -20,17 +20,18 @@ function ctrMixin(frag3d) {
 
         this.ctr = {x: 0, y: 0};
         this.ctr_initial = false; // Initial flag
+        this.ctr_initial_m = false; // Initial flag
         [vx, vy] = [0,0];
 
         try {
             orientationHandler = (e) => {
-                if(this.ctr_initial) {
+                if(this.ctr_initial_m) {
                     const delX = e.gamma - this.ctr.x;
                     const delY = e.beta - this.ctr.y;
                     vx -= delX * 0.09;
                     vy -= delY * 0.09;
                 } else {
-                    this.ctr_initial = true;
+                    this.ctr_initial_m = true;
                 }
                 this.ctr.x = e.gamma;
                 this.ctr.y = e.beta;

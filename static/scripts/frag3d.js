@@ -59,9 +59,30 @@ shader.u_P = proje.elements;
 shader.u_normalMatrix = nm.elements;
 shader.u_time = 0;
 
-shader.a_Position = [mesh.vertices, 3, fr.gl.FLOAT];
-shader.a_Normal = [mesh.normals, 3, fr.gl.FLOAT];
-shader.a_UV = [mesh.texCoords, 2, fr.gl.FLOAT];
+// shader.a_Position = [mesh.vertices, 3, fr.gl.FLOAT];
+// shader.a_Normal = [mesh.normals, 3, fr.gl.FLOAT];
+// shader.a_UV = [mesh.texCoords, 2, fr.gl.FLOAT];
+
+fr.bindVbo(mesh.vbo, 32, [
+    {
+        loc: shader.a_Position,
+        size: 3,
+        type: fr.gl.FLOAT,
+        offset: 0,
+    },
+    {
+        loc: shader.a_Normal,
+        size: 3,
+        type: fr.gl.FLOAT,
+        offset: 12,
+    },
+    {
+        loc: shader.a_UV,
+        size: 2,
+        type: fr.gl.FLOAT,
+        offset: 24,
+    },
+]);
 
 let sampler = [];
 let size = 1024;
@@ -71,14 +92,14 @@ for(let i = 0; i < size**2; i++) {
 fr.genTexture(0, 0, fr.gl.RGBA, size, size, 0, fr.gl.UNSIGNED_BYTE, new Uint8Array(sampler));
 shader.u_noise = 0;
 
-fr.bindBuffer(mesh.map, fr.gl.STATIC_DRAW);
-fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
+// fr.bindBuffer(mesh.map, fr.gl.STATIC_DRAW);
+fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
 let a = 0;
 
 
 fr.bindMousemove('.content', model, shader.u_M, nm, shader.u_normalMatrix, () => {
     shader.u_M = model.elements;
-    fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
+    fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
 });
 
 
@@ -86,7 +107,7 @@ let lastScroll = 0;
 
 fr.damping('vScroll', () => {
     shader.u_time = lastScroll - fr.vScroll;
-    fr.gl.drawElements(fr.gl.TRIANGLES, mesh.map.length, fr.gl.UNSIGNED_SHORT, 0);
+    fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
 });
 
 // let vScroll = 0;
