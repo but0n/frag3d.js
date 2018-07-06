@@ -145,20 +145,27 @@ function webglMixin(frag3d) {
         this.gl.enableVertexAttribArray(attr);
     }
 
-    frag3d.prototype.bindVbo = function(data, stride, chunks) {
-        let buf = this.gl.createBuffer();
+    frag3d.prototype.bindVbo = function(buf, stride, chunks) {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
         for(let v of chunks) {
             this.gl.vertexAttribPointer(v.loc, v.size, v.type, false, stride, v.offset);
             this.gl.enableVertexAttribArray(v.loc);
         }
     }
 
-    frag3d.prototype.bindBuffer = function(data, type) {
+    frag3d.prototype.createBuffer = function(data, bufferType, type = this.gl.STATIC_DRAW) {
         let buf = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, buf);
-        this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, data, type);
+        this.gl.bindBuffer(bufferType, buf);
+        this.gl.bufferData(bufferType, data, type);
+        return buf;
+    }
+
+    frag3d.prototype.getVBO = function(data, type) {
+        return this.createBuffer(data, this.gl.ARRAY_BUFFER, type);
+    }
+
+    frag3d.prototype.getEBO = function (data, type) {
+        return this.createBuffer(data, this.gl.ELEMENT_ARRAY_BUFFER, type);
     }
 
     frag3d.prototype.bindTexture = function(src, channel) {
@@ -235,38 +242,49 @@ function webglMixin(frag3d) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
 
         let shader = this.useShaderByID('gpgpu-vs', 'gpgpu-fs');
-        this.mainShader = shader;
 
-        shader.a_Position = [new Float32Array([  // Vertex Postion
-            -1, 1, 0.0,
-            1, 1, 0.0,
-            1, -1, 0.0,
-            -1, -1, 0.0
-        ]), 3, gl.FLOAT];
-        shader.a_texCoord = [new Float32Array([  // TexCoord
-            0.0, 1.0,
-            1.0, 1.0,
-            1.0, 0.0,
-            0.0, 0.0
-        ]), 2, gl.FLOAT];
+        if(!this.ss_mesh) {
+            this.ss_mesh = {};
+            this.ss_mesh.vbo = this.getVBO(new Float32Array([
+                -1, 1, 0.0, 0.0, 1.0,
+                1, 1, 0.0, 1.0, 1.0,
+                1, -1, 0.0, 1.0, 0.0,
+                -1, -1, 0.0, 0.0, 0.0
+            ]));
+            this.ss_mesh.ebo = this.getEBO(new Uint16Array([
+                0, 1, 2,
+                0, 2, 3
+            ]));
+        }
 
-        this.bindBuffer(new Uint16Array([
-            0, 1, 2,
-            0, 2, 3
-        ]), gl.STATIC_DRAW);
+        this.bindVbo(this.ss_mesh.vbo, 20, [
+            {
+                loc: shader.a_Position,
+                size: 3,
+                type: fr.gl.FLOAT,
+                offset: 0,
+            },
+            {
+                loc: shader.a_texCoord,
+                size: 2,
+                type: fr.gl.FLOAT,
+                offset: 12,
+            },
+
+        ]);
 
         let sampler = [];
-        let size = 4096*2;
-        for(let i = 0; i < size; i++) {
+        let size = 1024;
+        for(let i = 0; i < size**2; i++) {
             sampler.push(255*Math.random(), 255*Math.random(), 255*Math.random());
         }
-        this.genTexture(0, 0, gl.RGB, size, 1, 0, gl.UNSIGNED_BYTE, new Uint8Array(sampler));
-        // gl.uniform1i(shader.data, 0);
+        this.genTexture(0, 0, gl.RGB, size, size, 0, gl.UNSIGNED_BYTE, new Uint8Array(sampler));
         shader.data = 0;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ss_mesh.ebo);
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
     }
 
-    frag3d.prototype.genTexture = function texture(channel, level, format, width, height, border, type, data) {
+    frag3d.prototype.genTexture = function(channel, level, format, width, height, border, type, data) {
         let gl = this.gl;
         gl.activeTexture([
             gl.TEXTURE0,
@@ -286,6 +304,25 @@ function webglMixin(frag3d) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        return tex;
+    }
+
+    frag3d.prototype.getFrame = function(texture, render) {
+        let gl = this.gl;
+        const fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        fr.gl.bindTexture(fr.gl.TEXTURE_2D, texture);
+
+
+
+        let depthBuffer = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, 512, 512);
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        if(render)
+            render();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 }
 

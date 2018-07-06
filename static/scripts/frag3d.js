@@ -62,44 +62,82 @@ shader.u_time = 0;
 // shader.a_Position = [mesh.vertices, 3, fr.gl.FLOAT];
 // shader.a_Normal = [mesh.normals, 3, fr.gl.FLOAT];
 // shader.a_UV = [mesh.texCoords, 2, fr.gl.FLOAT];
+let vbuf = fr.getVBO(mesh.vbo);
 
-fr.bindVbo(mesh.vbo, 32, [
-    {
-        loc: shader.a_Position,
-        size: 3,
-        type: fr.gl.FLOAT,
-        offset: 0,
-    },
-    {
-        loc: shader.a_Normal,
-        size: 3,
-        type: fr.gl.FLOAT,
-        offset: 12,
-    },
-    {
-        loc: shader.a_UV,
-        size: 2,
-        type: fr.gl.FLOAT,
-        offset: 24,
-    },
-]);
+// fr.bindVbo(vbuf, 32, [
+//     {
+//         loc: shader.a_Position,
+//         size: 3,
+//         type: fr.gl.FLOAT,
+//         offset: 0,
+//     },
+//     {
+//         loc: shader.a_Normal,
+//         size: 3,
+//         type: fr.gl.FLOAT,
+//         offset: 12,
+//     },
+//     {
+//         loc: shader.a_UV,
+//         size: 2,
+//         type: fr.gl.FLOAT,
+//         offset: 24,
+//     },
+// ]);
+
 
 let sampler = [];
 let size = 1024;
 for(let i = 0; i < size**2; i++) {
     sampler.push(255*Math.random(), 255*Math.random(), 255*Math.random(), 255*Math.random());
 }
-fr.genTexture(0, 0, fr.gl.RGBA, size, size, 0, fr.gl.UNSIGNED_BYTE, new Uint8Array(sampler));
-shader.u_noise = 0;
+fr.genTexture(1, 0, fr.gl.RGBA, size, size, 0, fr.gl.UNSIGNED_BYTE, new Uint8Array(sampler));
+shader.u_noise = 1;
 
 // fr.bindBuffer(mesh.map, fr.gl.STATIC_DRAW);
-fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
+// fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
+
+
+let main_render = () => {
+    fr.bindVbo(vbuf, 32, [
+        {
+            loc: shader.a_Position,
+            size: 3,
+            type: fr.gl.FLOAT,
+            offset: 0,
+        },
+        {
+            loc: shader.a_Normal,
+            size: 3,
+            type: fr.gl.FLOAT,
+            offset: 12,
+        },
+        {
+            loc: shader.a_UV,
+            size: 2,
+            type: fr.gl.FLOAT,
+            offset: 24,
+        },
+    ]);
+    fr.gl.useProgram(shader.program);
+    fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
+}
+
+
+
+let pre_render = () => {
+    main_render();
+    // fr.getFrame(fbtex, main_render);
+}
+pre_render();
+
+
 let a = 0;
 
 
 fr.bindMousemove('.content', model, shader.u_M, nm, shader.u_normalMatrix, () => {
     shader.u_M = model.elements;
-    fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
+    pre_render();
 });
 
 
@@ -107,7 +145,7 @@ let lastScroll = 0;
 
 fr.damping('vScroll', () => {
     shader.u_time = lastScroll - fr.vScroll;
-    fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
+    pre_render();
 });
 
 // let vScroll = 0;
