@@ -15,6 +15,14 @@ function webglMixin(frag3d) {
         this.gl.enable(this.gl.BLEND);
     }
 
+    frag3d.prototype.glClear = function(r = 0, g = 0, b = 0, a = 1) {
+        let gl = this.gl;
+        gl.clearColor(r, g, b, a);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ADD);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_COLOR_BIT);
+    }
 
 // WebGL stuff
 
@@ -137,13 +145,17 @@ function webglMixin(frag3d) {
         return obj;
     }
 
-    frag3d.prototype.bindAttribute = function(attr, data, chunkSize, type) {
-        let buf = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
-        this.gl.vertexAttribPointer(attr, chunkSize, type, false, 0, 0);
+    frag3d.prototype.bindAttribute = function (attr, size, type, stride = 0, offset = 0) {
+        this.gl.vertexAttribPointer(attr, size, type, false, stride, offset);
         this.gl.enableVertexAttribArray(attr);
     }
+    // frag3d.prototype.bindAttribute = function(attr, data, chunkSize, type) {
+    //     let buf = this.gl.createBuffer();
+    //     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);
+    //     this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
+    //     this.gl.vertexAttribPointer(attr, chunkSize, type, false, 0, 0);
+    //     this.gl.enableVertexAttribArray(attr);
+    // }
 
     frag3d.prototype.bindVbo = function(buf, stride, chunks) {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);

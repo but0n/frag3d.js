@@ -4,6 +4,7 @@ function frag3d(id) {
 
 webglMixin(frag3d);
 meshMixin(frag3d);
+gltfMixin(frag3d);
 ctrMixin(frag3d);
 
 
@@ -39,14 +40,17 @@ let shader = fr.useShaderByID('Shader-vs', 'Shader-fs');
 let t = 0;
 
 // MVP
-let deepth = window.innerWidth < window.innerHeight
-    ? 10
-    : 5;
+// let deepth = window.innerWidth < window.innerHeight
+//     ? 300
+//     : 5;
 let model = new Matrix4();
-model.setRotate(t, 1, 0, 0);
+// model.setRotate(t, 1, 0, 0);
+// model.setScale(0.1, 0.1, 0.1);
+model.setTranslate(0, 0, 0);
+// model.rotate(50, 0, 1, 0);
 let view = new Matrix4();
 let proje = new Matrix4();
-view.setLookAt(0, 0, deepth, 0, 0, 0, 0, 1, 0);
+view.setLookAt(0, 0, 10, 0, 0, 0, 0, 1, 0);
 proje.setPerspective(30, $('#renderer').width()/$('#renderer').height(), 1, 100);
 
 let nm = new Matrix4();
@@ -124,9 +128,12 @@ let main_render = () => {
 }
 
 
-
+fr.loadGLTF('/static/meshs/Cube/Cube.gltf').then(gltf => {
+    fr.gltf = gltf;
+    fr.parseScene(gltf);
+});
 let pre_render = () => {
-    main_render();
+    // main_render();
     // fr.getFrame(fbtex, main_render);
 }
 pre_render();
@@ -136,16 +143,20 @@ let a = 0;
 
 
 fr.bindMousemove('.content', model, shader.u_M, nm, shader.u_normalMatrix, () => {
-    shader.u_M = model.elements;
-    pre_render();
+    // shader.u_M = model.elements;
+    // shader.u_normalMatrix = nm.elements;
+    // pre_render();
+    fr.parseScene(fr.gltf);
+
 });
 
 
 let lastScroll = 0;
 
 fr.damping('vScroll', () => {
-    shader.u_time = lastScroll - fr.vScroll;
-    pre_render();
+    // shader.u_time = lastScroll - fr.vScroll;
+    // pre_render();
+    // fr.parseScene(fr.gltf);
 });
 
 // let vScroll = 0;

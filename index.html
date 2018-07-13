@@ -139,9 +139,50 @@
             }
         </script>
 
+        <script id="gltf-vs" type="x-shader/x-vertex">
+            // Mesh
+            attribute vec3 POSITION;
+            attribute vec3 NORMAL;
+            attribute vec3 TANGENT;
+            attribute vec2 TEXCOORD_0;
+            // MVP
+            uniform mat4 u_M;
+            uniform mat4 u_V;
+            uniform mat4 u_P;
+            uniform mat4 u_normalMatrix;
+
+            varying vec3 v_normal;
+
+
+
+
+            void main () {
+                v_normal = vec3(u_normalMatrix * vec4(NORMAL, 1));
+                gl_Position = u_P * u_V * u_M * vec4(POSITION, 1);
+            }
+        </script>
+        <script id="gltf-fs" type="x-shader/x-fragment">
+
+            precision mediump float;
+
+            uniform sampler2D baseColorTexture;
+            uniform sampler2D metallicRoughnessTexture;
+
+            varying vec3 v_normal;
+
+            void main () {
+                vec3 N = normalize(v_normal);
+                vec3 L = normalize(vec3(10, 5, 0));
+                vec3 diffuse = vec3(1) * max(dot(N, L), 0.0);
+                gl_FragColor = vec4(diffuse, 1);
+            }
+        </script>
+
+
         <script src="static/scripts/jquery-2.1.4.min.js"></script>
         <script src="static/scripts/cuon-matrix.js"></script>
         <script src="static/scripts/mesh.js"></script>
+        <script src="static/scripts/gltf.js"></script>
         <script src="static/scripts/render.js"></script>
         <script src="static/scripts/control.js"></script>
         <script src="static/scripts/frag3d.js"></script>
