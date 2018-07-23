@@ -127,8 +127,9 @@ let main_render = () => {
     fr.gl.drawArrays(fr.gl.TRIANGLES, 0, mesh.amount);
 }
 
-
-fr.loadGLTF('/static/meshs/Cube/Cube.gltf').then(gltf => {
+let gltfpath = '/static/meshs/Cube/Cube.gltf';
+gltfpath = '/static/meshs/Suzanne/Suzanne.gltf';
+fr.loadGLTF(gltfpath).then(gltf => {
     fr.gltf = gltf;
     fr.parseScene(gltf);
 });

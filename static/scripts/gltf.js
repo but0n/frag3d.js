@@ -68,7 +68,10 @@ function gltfMixin(frag3d) {
                         // Clean cache
                         gltf.rawTextures = [];
                         for (let [i, { sampler, source }] of gltf.textures.entries()) {
-                            let opt = gltf.samplers[sampler];
+                            let opt = {};
+                            if(gltf.samplers) {
+                                opt = gltf.samplers[sampler];
+                            }
 
                             gl.activeTexture([
                                 gl.TEXTURE0,
@@ -173,8 +176,22 @@ function gltfMixin(frag3d) {
         let mat = gltf.materials[material];
         console.log(mat);
         for(let uniform in mat.pbrMetallicRoughness) {
-            curShader[uniform] = mat.pbrMetallicRoughness[uniform].index;
-            console.log(uniform);
+            const unit = mat.pbrMetallicRoughness[uniform].index;
+            gl.activeTexture([
+                gl.TEXTURE0,
+                gl.TEXTURE1,
+                gl.TEXTURE2,
+                gl.TEXTURE3,
+                gl.TEXTURE4,
+                gl.TEXTURE5,
+                gl.TEXTURE6,
+                gl.TEXTURE7
+            ][unit]);
+
+            gl.bindTexture(gl.TEXTURE_2D, gltf.rawTextures[unit]);
+
+            curShader[uniform] = unit;
+            console.log(uniform, unit);
         }
 
 
@@ -185,6 +202,9 @@ function gltfMixin(frag3d) {
         let gl = this.gl;
         let view = gltf.bufferViews[idx];
         let bufferView = gltf.rawBufferViews[idx];
+        view.target = view.target
+            ? view.target
+            : gl.ARRAY_BUFFER;
         gl.bindBuffer(view.target, bufferView);
     }
 
@@ -216,9 +236,9 @@ function gltfMixin(frag3d) {
         if(size)
             shader[attrName] = [size, acces.componentType, acces.stride, acces.byteOffset];
         else {
-            shader.u_M = model.elements;
-            shader.u_V = view.elements;
-            shader.u_P = proje.elements;
+            // shader.u_M = model.elements;
+            // shader.u_V = view.elements;
+            // shader.u_P = proje.elements;
         }
         // this.gl.vertexAttribPointer(attr, chunkSize, type, false, 0, 0);
         // this.gl.enableVertexAttribArray(attr);
