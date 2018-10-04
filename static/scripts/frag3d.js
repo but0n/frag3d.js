@@ -131,6 +131,7 @@ let gltfpath = '/static/meshs/Cube/Cube.gltf';
 gltfpath = '/static/meshs/Suzanne/Suzanne.gltf';
 fr.loadGLTF(gltfpath).then(gltf => {
     fr.gltf = gltf;
+    console.error(gltf)
     fr.parseScene(gltf);
 });
 let pre_render = () => {

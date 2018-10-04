@@ -20,38 +20,42 @@ function gltfMixin(frag3d) {
     }
 
     frag3d.prototype.loadGLTF = function (path = '/static/meshs/Duck/Duck.gltf') {
-        // let root;
         return new Promise((resolve, reject) => {
             // Load gltf json
-            this.load(path, ).then(gltf => {
+            this.load(path).then(gltf => {
                 path = path.split('/');
                 path.pop();
 
                 gltf._path = path.join('/') + '/';
-                // Load images
-                this.loadImages(gltf).then(console.log('image done'));
-                // Parse materials
-                this.parseMaterials(gltf);
 
-                let bufRemain = gltf.buffers.length;
-                gltf.rawBuffers = [];
-                for(let buf of gltf.buffers) {
-                    this.load(gltf._path + buf.uri, 'arraybuffer').then(buffer => {
-                        gltf.rawBuffers.push(buffer);
-                        if(!--bufRemain) {
-                            // Parse bufferViews: create glbuffer instances
-                            this.parseBufferViews(gltf);
+                Promise.all([this.loadImages(gltf), this.parseMaterials(gltf), this.loadBuffers(gltf)]).then(resolve(gltf));
 
-                            resolve(gltf)
-                        }
-                    });
-                }
             });
         });
     }
 
+    frag3d.prototype.loadBuffers = function (gltf) {
+        let bufRemain = gltf.buffers.length;
+        gltf.rawBuffers = [];
+
+        return new Promise((resolve, reject) => {
+            for(let buf of gltf.buffers) {
+                this.load(gltf._path + buf.uri, 'arraybuffer').then(buffer => {
+                    gltf.rawBuffers.push(buffer);
+                    if(!--bufRemain) {
+                        // Parse bufferViews: create glbuffer instances
+                        this.parseBufferViews(gltf);
+
+                        resolve()
+                    }
+                });
+            }
+        })
+    }
+
     frag3d.prototype.loadImages = function (gltf) {
         let gl = this.gl;
+        console.warn('handle images')
         gltf.rawImages = [];
         return new Promise((resolve, reject) => {
             let remain = gltf.images.length;
@@ -135,7 +139,7 @@ function gltfMixin(frag3d) {
     }
 
     frag3d.prototype.parseScene = function (gltf, scene = gltf.scene) {
-        this.glClear();
+        this.glClear(1, 1, 1);
 
         let curScene = gltf.scenes[scene];
         for (let node of curScene.nodes) {
@@ -273,8 +277,8 @@ function gltfMixin(frag3d) {
 
 
             // this.bindBufferView(gltf, indices);
-            console.log(ebo)
-            console.log(gltf.bufferViews[ebo.bufferView]);
+            // console.log(ebo)
+            // console.log(gltf.bufferViews[ebo.bufferView]);
         }
     }
 
