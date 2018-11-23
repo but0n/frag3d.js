@@ -43,15 +43,15 @@ function ctrMixin(frag3d) {
         }
         $(id).mousemove((e) => {
             if(this.ctr_initial) {
-                const delX = e.clientX - this.ctr.x;
-                const delY = e.clientY - this.ctr.y;
+                const delX = e.originalEvent.movementX;
+                const delY = e.originalEvent.movementY;
                 vx += -delX * 0.005;
                 vy += delY * 0.005;
             } else {
                 this.ctr_initial = true;
             }
-            this.ctr.x = e.clientX;
-            this.ctr.y = e.clientY;
+            // this.ctr.x = e.clientX;
+            // this.ctr.y = e.clientY;
             // console.table([vx, vy]);
         });
         let task = () => {
