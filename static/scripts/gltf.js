@@ -125,7 +125,7 @@ function gltfMixin(frag3d) {
         gltf.rawBufferViews = [];
         // gltf.rawGLBuffers = [];
         for(let view of gltf.bufferViews) {
-            let bufferView = new DataView(gltf.rawBuffers[view.buffer], view.byteOffset, view.byteLenght);
+            let bufferView = new DataView(gltf.rawBuffers[view.buffer], view.byteOffset, view.byteLength);
 
             // NOTE: Create gl buffer instance
             let buf = gl.createBuffer();
