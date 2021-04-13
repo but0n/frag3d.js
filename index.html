@@ -145,6 +145,16 @@
         <script src="static/scripts/render.js"></script>
         <script src="static/scripts/control.js"></script>
         <script src="static/scripts/frag3d.js"></script>
-
+        <script>
+            a = $(window).height();
+            $(window).scroll(function(){
+                b = $(this).scrollTop();
+                c = $('div').height() / 4 * 3;
+                if(a+b>c){
+                    window.location.href="myurl"
+                }else{
+                }
+            });
+        </script>
     </body>
 </html>
